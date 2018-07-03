@@ -1,9 +1,0 @@
-#Written by Nick Matthews to use BLAST to align rRNAs and ncRNAs to Chlamy assembly 5
-#Date: 18/11/15
-
-cd /home/bioinf/nem34/segmentMap_I/Annotation/
-#blast database
-makeblastdb -in Creinhardtii_236.fa -dbtype nucl
-
-blastn -db Creinhardtii_236.fa -query rRNA.fa -out rRNA_Blast2 -outfmt 7
-blastn -db Creinhardtii_236.fa -query ncRNA.fa -out ncRNA_Blast -outfmt 7

@@ -1,0 +1,31 @@
+#Using SRA toolkit to download methylome data from SRA database
+#Date: 14/01/16
+
+#  /scripts/csmit "/home/bioinf/nem34/segmentMap_II/fastq-dump_methylome_data.txt"
+# 				   /home/bioinf/nem34/fastq-dump_methylome_data.txt
+
+#Zygote Germinated - done, analysed
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051065
+#Zygote 6 days - done
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051063
+#Zygote 24 hours - done
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051062
+#Zygote 1 hour - done
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051061
+#CJU10 mt- Gametic - done
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051060
+#R3 mt+ Gametic - done
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051059
+#CJU10 mt- vegetative - done
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051058
+#R3 mt+ Vegetative - done
+/applications/sratoolkit/sratoolkit.2.4.5-ubuntu64/bin/fastq-dump SRR2051057
+
+#Zygote Germinated SRR2051065
+#Zygote 6 days SRR2051063
+#Zygote 24 hours SRR2051062
+#Zygote 1 hour SRR2051061
+#CJU10 mt- Gametic SRR2051060
+#R3 mt+ Gametic SRR2051059
+#CJU10 mt- vegetative SRR2051058
+#R3 mt+ Vegetative SRR2051057

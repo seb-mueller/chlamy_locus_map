@@ -1,9 +1,0 @@
-#Code for using Bismark to analyse Bisulfite methylation libraries, written by Nick Matthews
-
-##Bismark Usage
-
-#First prepare the genome - done
-/applications/bismark/bismark_v0.14.5/bismark_genome_preparation /home/bioinf/nem34/Chlamy_Assembly_5/ --path_to_bowtie /applications/bowtie2/bowtie2-2.2.6/
-
-#Now run bismark, -q as fastq file, -N 1 1 mismatch allowed
-/scripts/csmit "/applications/bismark/bismark_v0.14.5/bismark -q -N 1 --path_to_bowtie /applications/bowtie2/bowtie2-2.2.6/ /home/bioinf/nem34/Chlamy_Assembly_5/ /home/bioinf/nem34/SRR2051065.fastq"

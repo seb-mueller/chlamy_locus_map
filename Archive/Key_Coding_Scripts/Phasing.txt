@@ -1,0 +1,15 @@
+#Some code written by Nick Matthews to submit phasing files using Bruno Santos' Phasing code
+#Date: 01/12/15
+
+#Make file of loci
+load("/home/bioinf/nem34/segmentation_with_externals.r_2015-11-12_17:56:17.079066/segD_first_chlamy_segmentation_nick.RData")
+write.table(as.data.frame(segD@coordinates),"lociforphasing.csv",sep=",")
+
+#Code used to submit python files for phasing
+
+/scripts/csmit -m 24G "python /home/bioinf/nem34/segmentMap_II/src/run_phasing3.py"
+
+##Remove first two lines which contain comments which are confusing phasing
+sed -i 1,2d /home/bioinf/nem34/data_for_seg/GSM803103_CRE1_trimmed_aligned_assembly5.gff2
+sed -i 1,2d /home/bioinf/nem34/data_for_seg/GSM803104_CRE2_trimmed_aligned_assembly5.gff2
+sed -i 1,2d /home/bioinf/nem34/data_for_seg/GSM803105_CRE3_trimmed_aligned_assembly5.gff2
