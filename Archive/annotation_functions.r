@@ -2,7 +2,7 @@
 #Adapted by Nick Matthews from code written by Tom Hardcastle and Sebastian Muller
 #Date: 09/02/16
 
-#Divides up loci into seperate size classes - use loci size plot to determain appropriate divisions
+
 sizeClasses <- function(locAnn) {
       
     intervals <- c(0,30,75,150,1000,Inf) #different to 
@@ -11,8 +11,7 @@ sizeClasses <- function(locAnn) {
     locAnn$sizeclass <- as.ordered(cut(width(locAnn),intervals))
     locAnn
 }
-# TODO file.path(mypath,"transposons_newcut.gff3")
-#Processes and generate annotations into single file
+
 TIGR <- function()
     {
         transposonsgff <- import.gff3("/home/bioinf/nem34/segmentMap_II/Old_Annotation_Files/transposons_newcut.gff3") #GRanges
@@ -50,28 +49,29 @@ TIGR <- function()
 	fiveprimeUTR<-anno[anno$type=="five_prime_UTR",]
 	
 	
-#I've made genes just the genes	- previous slightly unusual gene definition
+#I've made genes just the genes	
 	#elements <- annogr[annogr@elementMetadata$type=="miRNA" |annogr@elementMetadata$type=="ncRNA" | annogr@elementMetadata$type=="gene" | annogr@elementMetadata$type=="pseudogene" | annogr@elementMetadata$type=="rRNA" |  annogr@elementMetadata$type=="tRNA",] #only 11 sno,sn RNA, therefore discarded
         #elements$Index <- NULL;elements$Note <- NULL;elements$Parent <- NULL;elements$Index <- NULL;elements$Derives_from <- NULL;elements$Alias <- NULL
         #tRNA <- annogr[annogr@elementMetadata$type=="tRNA",] #don't have
         
-     #Assume promoter region the 500bp flanking region around gene   
-        promoter <- flank(anno[anno$type=="gene"],500)
-        promoter$type <- droplevels(promoter$type)
-        levels(promoter$type) <- "promoter"
-#I've made genes just the genes - previous slightly unusual gene definition
-	#genes <- c(elements,transposonsgff,lincRNAs,promoter,natRNAs)
+        
+        promotor <- flank(anno[anno$type=="gene"],500)
+        promotor$type <- droplevels(promotor$type)
+        levels(promotor$type) <- "promotor"
+#I've made genes just the genes       
+	#genes <- c(elements,transposonsgff,lincRNAs,promotor,natRNAs)
         #genes$type <- droplevels(genes$type)
         #genes$sizeclass <- cut(width(genes),breaks=c(0,500,2000,max(width(genes))))
         #levels(genes$sizeclass) <- c("Short","Medium","Long")
-        #genes$isTE <- genes$type %in% levels(transposonsgff$type) #not sure if will work or relevent - none fit at the moment so not using
-	everything<-c(irs[,1:2],trs[,1:2],miRNA[,1:2],rRNA[,1:2],MSAT[,1:2],mRNA[,1:2],genes[,1:2],exons[,1:2],CDS[,1:2],threeprimeUTR[,1:2],fiveprimeUTR[,1:2],promoter[,1:2],transposonsgff[,1:2],SoloLTR[,1:2])
+        #genes$isTE <- genes$type %in% levels(transposonsgff$type) #not sure if will work or relevent - none fit atm
+	everything<-c(irs[,1:2],trs[,1:2],miRNA[,1:2],rRNA[,1:2],MSAT[,1:2],mRNA[,1:2],genes[,1:2],exons[,1:2],CDS[,1:2],threeprimeUTR[,1:2],fiveprimeUTR[,1:2],promotor[,1:2],transposonsgff[,1:2],SoloLTR[,1:2])
         
-	save(genes,anno,transposonsgff,SoloLTR,rRNA,miRNA,MSAT,mRNA,irs,trs,promoter,threeprimeUTR,fiveprimeUTR,exons,CDS,everything,file="annotation_tigr.Rdata")
+        #save(genes,anno,miRNAs,transposonsgff,irs, ncRNA,mRNA,gccontmRNA,file="annotation_tigr.Rdata")
+	save(genes,anno,transposonsgff,SoloLTR,rRNA,miRNA,MSAT,mRNA,irs,trs,promotor,threeprimeUTR,fiveprimeUTR,exons,CDS,everything,file="annotation_tigr.Rdata")
     }
 
 
-#Function to comute overlaps with annotations using annotation file created by TIGR function
+                                        # This function needs an annotation map, here stored in 'annotation_tigr.Rdata'. This gets constructed in the TIGR function above
 
 featureAnn <- function(locAnn, loci) {
     load("annotation_tigr.Rdata")
@@ -97,14 +97,11 @@ featureAnn <- function(locAnn, loci) {
 	
 
     # this bit finds the wild-type samples
-    #TODO this needs to link to latest csv
     samples <- read.csv("/home/bioinf/nem34/segmentMap_II/Summary_of_Data_5.csv",header=TRUE)
-    #TODO we need to check definition of WTs
     wt <- samples$GenuineControls %in% c("wt")
                                         #expression only for wt data
     wtrepgroups <- as.integer(unique(loci@replicates[wt]))
     locAnn$expression <- rowSums(loci@locLikelihoods[,wtrepgroups]>log(0.5))
-    #TODO We need a plot output for this distribution
     locAnn$expressionClass <- as.ordered(cut(locAnn$expression,breaks=c(-Inf,1,5,Inf),include.lowest=TRUE,labels=c("specific","inbetween","common"))) #changed common threshold to more than 5
     
         
@@ -164,12 +161,12 @@ featureAnn <- function(locAnn, loci) {
     #locAnn$overlaptype[queryHits(miRNAoverlap)[miRNAoverlapunique]] <- as.character(miRNA$type)[subjectHits(miRNAoverlap)[miRNAoverlapunique]]
 
 #including promoters, UTRs, CDS, exons, introns...
-    seqlevels(promoter) <- seqlevels(locAnn)
-    promoteroverlap <- findOverlaps(locAnn,promoter)
-    promoteroverlapunique <- !rev(duplicated(rev(queryHits(promoteroverlap))))
-    locAnn$promoter <- rep(FALSE, length(locAnn))
-    locAnn$promoter[queryHits(promoteroverlap)[promoteroverlapunique]] <- TRUE
-    #locAnn$overlaptype[queryHits(promoteroverlap)[promoteroverlapunique]] <- as.character(promoter$type)[subjectHits(promoteroverlap)[promoteroverlapunique]]
+    seqlevels(promotor) <- seqlevels(locAnn)
+    promotoroverlap <- findOverlaps(locAnn,promotor)
+    promotoroverlapunique <- !rev(duplicated(rev(queryHits(promotoroverlap))))
+    locAnn$promotor <- rep(FALSE, length(locAnn))
+    locAnn$promotor[queryHits(promotoroverlap)[promotoroverlapunique]] <- TRUE
+    #locAnn$overlaptype[queryHits(promotoroverlap)[promotoroverlapunique]] <- as.character(promotor$type)[subjectHits(promotoroverlap)[promotoroverlapunique]]
 
     seqlevels(mRNA) <- seqlevels(locAnn)
     mRNAoverlap <- findOverlaps(locAnn,mRNA)
@@ -224,12 +221,12 @@ featureAnn <- function(locAnn, loci) {
     #locAnn$overlaptype[queryHits(SoloLTRoverlap)[SoloLTRoverlapunique]] <- as.character(SoloLTR$type)[subjectHits(SoloLTRoverlap)[SoloLTRoverlapunique]
 
                                         #reordering factor levels for overlaptype for better legends
-    #locAnn$overlaptype <- factor(locAnn$overlaptype, levels = c("intergenic","gene", "promoter", "Copia", "TOC1", "DIRS", "DNA", Gulliver", "Gypsy", "L1", "LTR", "Novosib", "P", "REM1", "REP", "RTE", "SINE", "TCR1", "TE", "TOC2"))
+    #locAnn$overlaptype <- factor(locAnn$overlaptype, levels = c("intergenic","gene", "promotor", "Copia", "TOC1", "DIRS", "DNA", Gulliver", "Gypsy", "L1", "LTR", "Novosib", "P", "REM1", "REP", "RTE", "SINE", "TCR1", "TE", "TOC2"))
     
     locAnn
 }
 
-#Methylation Ovelaps - Meth IP data
+#Methylation Ovelaps - old one!!
 methylation <- function(locAnn) {
     meth<-import.gff3("/data/pipeline/prod/SL55/SL55.non_redundant.v_genome_JGI_assembly5_Chlamydomonas_reinhardtii.patman.gff3")
     seqlevels(meth) <- seqlevels(locAnn)
@@ -277,7 +274,7 @@ methAnnotate <- function(locAnn, cl)
 }
 
 
-#Meth overlaps using differential loci from Tom - too small datasets
+#Meth overlaps using differential loci from Tom
 methDiff <- function(locAnn, cl)
     {
         library(stats4)
@@ -362,11 +359,13 @@ countingBiases <- function(locAnn, cl) {
     firstNucnomulti <- substr(aDnormalnomulti@alignments$tag,1,1)
                                         #proportion of sRNAs with a given 5'nuc
     table(firstNucnomulti)/length(firstNucnomulti)
-
+                                        #    A    C    G    T 
+                                        # 0.38 0.14 0.19 0.28
 
     # find normal ratio of first base nucleotides
     expectedRatio <-  (tapply(rowSums(aDnormalnomulti@data),firstNucnomulti,sum)/sum(aDnormalnomulti@data))
-
+                                        #    A    C    G    T 
+                                        # 0.37 0.13 0.23 0.28
 
     # get counts in each locus
     aDA <- aDnormal[firstNuc=="A",]
@@ -385,7 +384,7 @@ countingBiases <- function(locAnn, cl) {
     
     firstBase <- cbind(locAnn$countsA, locAnn$countsC, locAnn$countsG, locAnn$countsT)
 
-    # assumes binomial distribution and looks for significant variation for each locus - variation from the overall ratio!
+    # assumes binomial distribution and looks for significant variation for each locus
     z <- pbinom(firstBase,
                 matrix(rowSums(firstBase), ncol = ncol(firstBase), nrow = nrow(firstBase)),
                 prob = matrix(expectedRatio, ncol = ncol(firstBase), nrow = nrow(firstBase), byrow = TRUE), lower.tail = FALSE)
@@ -568,7 +567,7 @@ assignCI <- function(cis, windows, comma) {
                                         #    classIDs    
 }
 
-#Needed to compute confidence intervals in countingBiases function
+
 classCI <- function(x1, x2, probs, divisions, comma, plot = TRUE,plotname) {
     if(missing(probs))
         probs <- 1 / (1 + 1/ divisions)
@@ -643,7 +642,7 @@ strainSpec <- function(locAnn, loci) {
     locAnn
 }
 
-##Compares loci from mutant experiments - NOTE: selects only the wts from Adrian's mutant experiments for comparison!
+##Compares loci from mutant experiments - NOTE: selects only the wts from Adrian's mutant experiments!
 mutantSpec <- function(locAnn, loci) {
     source("/home/tjh48/Code/segmentSeq_devel/segmentSeq/R/selectLoci.R")
     selLoc <- selectLoci(loci, FDR = 0.1, perReplicate = TRUE, returnBool = TRUE)
@@ -669,7 +668,7 @@ mutantSpec <- function(locAnn, loci) {
     locAnn
 }
 
-#Including phasing outputs
+
 phaseMatch <- function(locAnn)
     {
         ##TASI analyse
@@ -683,8 +682,7 @@ phaseMatch <- function(locAnn)
         tasi <- read.csv("/home/bioinf/nem34/segmentMap_II/phasing_results_by_locus_21nt.tsv",sep="\t",header=FALSE) 
                                         #table(locAnn$cluster[tasi[,"V10"]< c(-5)] & tasi[,"V4"]< c(-5)])
         Phased <- rep("none",nrow(tasi))
- 
-#If in more than 5 libraries loci phasing significant at 0.05 significance level = "high", between 1 and 5 = "moderate"
+        
 	tasi[,4:166] <- exp(tasi[,4:166])
         tasi[,4:166] <- apply(tasi[,4:166], 2, function(x) {x[x<1] <- p.adjust(x[x < 1], method = "BH"); x})
         Phased[rowSums(tasi[,4:166] < 0.05)>1] <- "moderate"
