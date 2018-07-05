@@ -4,6 +4,7 @@
 
 #set working directory to github repository on cluster
 setwd("/projects/nick_matthews/chlamy_locus_map_github")
+#setwd("C:/Users/Nick/Documents/Uni Work/Third Year/Project/chlamy_locus_map")
 
 #Load necesary libraries
 library(xtable)
@@ -48,7 +49,7 @@ export.gff3(gr7,con="loci7_fdr01.gff3")
 #Process transposon file
 transposonProcess(annoDir)
 #Compute and compiles annotations
-computeAnnotations(annoDir)
+compileAnnotations(annoDir)
 #####the next set of functions take the annotated locus object 'gr7' and add some more annotation data#####
 #The functions are found 'chlamy_source_code.R' 
 

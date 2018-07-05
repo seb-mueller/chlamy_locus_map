@@ -8,15 +8,14 @@
 # TODO file.path(annoDir,"transposons_newcut.gff3")
 #Compute annotations loads in annotation files from a provided directory and after processing them outputs and saves them as a Rdata file for further use
 #path to annotation files has a default but can also be user specified
-computeAnnotations <- function(annoDir = "/home/projects/nick_matthews/resources") {
+compileAnnotations <- function(annoDir = "/home/projects/nick_matthews/resources") {
   #annoDir = "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentMap_II/Old_Annotation_Files"
   #Specify what libraries are required
   require(GenomicRanges)
   require(rtracklayer)
   
-  #Import transposon data
-  transposons <- import.gff3(file.path(annoDir,"Creinhardtii_281_v5.5.transposonsfromrepeatmasked_assembly_v5.0.gff3"))
-  repetativeSeq <- import.gff3(file.path(annoDir,"Creinhardtii_281_v5.5.repeatmaskedannotated_assembly_v5.0.gff3"))
+  #Load large transposon file
+  load(file.path(annoDir,"transposon_annotations.Rdata"))
   #Load in irs and trs data
   irs <- import.gff3(file.path(annoDir,"irf_output_Creinhardtii_236.gff"))
 	irs$type<-irs$source
@@ -24,8 +23,8 @@ computeAnnotations <- function(annoDir = "/home/projects/nick_matthews/resources
 	trs$type<-trs$source       
   
   #Load in miRNA data
-  #TODO check miRNA file for correspondance to Adrian's paper list, integrate medium confidence
-  miRNA <- import.gff3(file.path(annoDir,"mirna_final_coordinates.gff"))
+  #TODO check miRNA file for correspondance to Adrian's paper list
+  miRNA <- import.gff3(file.path(annoDir,"Vallietal2016_miRNAs.gff3"))
 	miRNA$type <- "miRNA"
   #Load in rRNA data
 	rRNA <- import.gff3(file.path(annoDir,"Creinhardtii_rRNA.gff3"))
@@ -43,8 +42,8 @@ computeAnnotations <- function(annoDir = "/home/projects/nick_matthews/resources
 	fiveprimeUTR<-anno[anno$type=="five_prime_UTR",]
   
 	#Calculate promoter region the 500bp flanking region around gene
-	#TODO check this, surely the promoter region is the 500bp upstream...
-  promoter <- flank(anno[anno$type=="gene"],500)
+	#TODO check this, surely the promoter region is the 500bp upstream... use gene or mRNA?
+  promoter <- promoters(anno[anno$type=="mRNA"],upstream=500,downstream=0)
   promoter$type <- droplevels(promoter$type)
   levels(promoter$type) <- "promoter"
   
@@ -53,10 +52,17 @@ computeAnnotations <- function(annoDir = "/home/projects/nick_matthews/resources
   levels(introns$type) <- "intron"
         
   #Puts all annotations together just incase it's useful        
-	everything<-c(irs[,1:2],trs[,1:2],miRNA[,1:2],rRNA[,1:2],MSAT[,1:2],mRNA[,1:2],genes[,1:2],exons[,1:2],CDS[,1:2],threeprimeUTR[,1:2],fiveprimeUTR[,1:2],promoter[,1:2],transposonsgff[,1:2],SoloLTR[,1:2],introns[,1:2])
+	# everything<-c(irs[,1:2],trs[,1:2],miRNA[,1:2],rRNA[,1:2],MSAT[,1:2],mRNA[,1:2],genes[,1:2],
+	#               exons[,1:2],CDS[,1:2],threeprimeUTR[,1:2],fiveprimeUTR[,1:2],promoter[,1:2],
+	#               transposons[,1:2],introns[,1:2])
   
 	#Save all as one big RData file   
-	save(genes,anno,transposons,repetativeSeq,rRNA,miRNA,MSAT,mRNA,irs,trs,promoter,threeprimeUTR,fiveprimeUTR,exons,CDS,introns,everything,file=file.path(annoDir,"chlamy_all_annotations.Rdata"))
+	save(genes,anno,
+	     transposons, repetativeSeq, TE_DNA, TE_RET,
+	     TE_Undefined,TE_L1,TE_Gypsy,TE_Copia,TE_hAT,TE_RTE,TE_Novosib,TE_DualenRandI,
+	     TE_P,TE_Mariner,TE_REM1,TE_EnSpm,TE_DIRS,TE_TOC2,TE_TOC1,TE_Gulliver,TE_TCR1,TE_Harbinger,
+	     rRNA,miRNA,MSAT,mRNA,irs,trs,promoter,threeprimeUTR,fiveprimeUTR,exons,CDS,
+	     introns,file=file.path(annoDir,"chlamy_all_annotations.Rdata"))
 }
 
 #Function which shortens the standard annotation process
@@ -156,6 +162,7 @@ transposonProcess <- function(annoDir = "/home/projects/nick_matthews/resources"
   transposons$name <- rep("Unknown", length(transposons))
   transposons$class <- rep("Unknown", length(transposons))
   transposons$order <- rep("Unknown", length(transposons))
+  transposons$superfamily <- rep("Unknown", length(transposons))
   #Run loop through each row and assign order
   for(ii in 1:nrow(referenceFile)) {
     #Find matches for the search terms
@@ -164,14 +171,49 @@ transposonProcess <- function(annoDir = "/home/projects/nick_matthews/resources"
     transposons$name[tempSearch] <- referenceFile$Name[ii]
     transposons$class[tempSearch] <- referenceFile$Class[ii]
     transposons$order[tempSearch] <- referenceFile$Order[ii]
+    transposons$superfamily[tempSearch] <- referenceFile$Superfamily[ii]
   }
   #Extract all sequences as repetative sequences
   repetativeSeq <- transposons
-  #Extract just identified transponsons
-  transponsons <- transposons[transposons$name != "Unknown"]
+  #Extract just identified transposons
+  transposons <- transposons[transposons$name != "Unknown"]
+  #Extract the two major classes
+  TE_Class_DNA <- transposons[transposons$class =="DNA"]
+  TE_Class_RET <- transposons[transposons$class =="RET"]
   #Export files
   export.gff3(transposons,file.path(annoDir,"Creinhardtii_281_v5.5.transposonsfromrepeatmasked_assembly_v5.0.gff3"))
   export.gff3(repetativeSeq, file.path(annoDir,"Creinhardtii_281_v5.5.repeatmaskedannotated_assembly_v5.0.gff3"))
+  export.gff3(TE_Class_DNA, file.path(annoDir,"Creinhardtii_281_v5.5.DNAtransposonsfromrepeatmasked_assembly_v5.0.gff3"))
+  export.gff3(TE_Class_RET, file.path(annoDir,"Creinhardtii_281_v5.5.RETtransposonsfromrepeatmasked_assembly_v5.0.gff3"))
+  
+  #extract major Orders
+  orders <- unique(transposons$order)
+  for(ii in 1:length(orders)) {
+    #Extract superfamily
+    temp <- transposons[transposons$order == orders[ii]]
+    #Export as gff3
+    export.gff3(temp,file.path(annoDir,paste0("Creinhardtii_281_v5.5.Order",orders[ii],"transposonsfromrepeatmasked_assembly_v5.0.gff3")))
+    #Assign to object in environment for saving
+    assign(paste0("TE_Order_",orders[ii]),temp)
+  }
+  
+  #Now do the same for all the superfamilies
+  superfamilies <- unique(transposons$superfamily)
+  for(ii in 1:length(superfamilies)) {
+    #Extract superfamily
+    temp <- transposons[transposons$superfamily == superfamilies[ii]]
+    #Export as gff3
+    export.gff3(temp,file.path(annoDir,paste0("Creinhardtii_281_v5.5.",superfamilies[ii],"transposonsfromrepeatmasked_assembly_v5.0.gff3")))
+    #Assign to object in environment for saving
+    assign(paste0("TE_",superfamilies[ii]),temp)
+  }
+  
+  #Export as consolidated Rdata file
+  save(transposons, repetativeSeq, TE_Class_DNA, TE_Class_RET,
+       TE_Order_LTR,TE_Order_LINE,TE_Order_TIR,TE_Order_SINE,TE_Order_DIRS,
+       TE_L1,TE_Gypsy,TE_Copia,TE_hAT,TE_RTE,TE_Novosib,TE_DualenRandI,
+       TE_P,TE_Mariner,TE_REM1,TE_EnSpm,TE_DIRS,TE_TOC2,TE_TOC1,TE_Gulliver,TE_TCR1,TE_Harbinger,
+  file=file.path(annoDir,"transposon_annotations.Rdata"))
 }
 
 #Function used by classCI function
@@ -221,7 +263,6 @@ classCI <- function(x1, x2, probs, divisions, comma, plot = TRUE,plotname) {
   
   classIDs
 }
-
 
 #####Function set 2 - locus feature annotations#####
 #This set of functions annotate loci based on their intrinsic features or occurances
@@ -524,7 +565,11 @@ featureAnn <- function(locAnn, annoDir = "/home/projects/nick_matthews/resources
   annotations <- list(
     genes = genes,transposons = transposons,repetativeSeq = repetativeSeq,
     rRNA = rRNA,miRNA = miRNA,MSAT = MSAT,mRNA = mRNA,IR = irs,TR = trs,promoter = promoter,
-    threeprimeUTR = threeprimeUTR,fiveprimeUTR = fiveprimeUTR,exons = exons,CDS = CDS,introns=introns
+    threeprimeUTR = threeprimeUTR,fiveprimeUTR = fiveprimeUTR,exons = exons,CDS = CDS,introns=introns,
+    TE_L1=TE_L1,TE_Gypsy=TE_Gypsy,TE_Copia=TE_Copia,TE_hAT=TE_hAT,TE_RTE=TE_RTE,
+    TE_Novosib=TE_Novosib,TE_DualenRandI=TE_DualenRandI,TE_P=TE_P,TE_Mariner=TE_Mariner,TE_REM1=TE_REM1,
+    TE_EnSpm=TE_EnSpm,TE_DIRS=TE_DIRS,TE_TOC2=TE_TOC2,TE_TOC1=TE_TOC1,TE_Gulliver=TE_Gulliver,TE_TCR1=TE_TCR1,
+    TE_Harbinger=TE_Harbinger
   )
   #Then compute annotations
   locAnn <- computeOverlaps(locAnn,annotations)
@@ -535,22 +580,21 @@ featureAnn <- function(locAnn, annoDir = "/home/projects/nick_matthews/resources
   locAnn$intergenic <- rep(FALSE,length(locAnn))
   locAnn$intergenic[-geneoverlapunique] <- TRUE
   
-  #Compute overlap with transponsons
-  seqlevels(transposonsgff) <- seqlevels(locAnn)
-  teoverlap <- findOverlaps(locAnn,transposonsgff)
-  #TODO how do we decide which transposon to annotate as when not unique?
-  teoverlapunique <- !rev(duplicated(rev(queryHits(teoverlap))))
-  #Assign TE name, class and order
-  #Name
-  locAnn$TEname <- rep("none", length(locAnn))
-  locAnn$TEname[queryHits(teoverlap)[teoverlapunique]] <- as.character(transposonsgff$type)[subjectHits(teoverlap)[teoverlapunique]]
-  #Class
-  locAnn$TEclass <- rep("none", length(locAnn))
-  locAnn$TEclass[queryHits(teoverlap)[teoverlapunique]] <- as.character(transposonsgff$class)[subjectHits(teoverlap)[teoverlapunique]]
-  #Order
-  locAnn$TEorder <- rep("none", length(locAnn))
-  locAnn$TEorder[queryHits(teoverlap)[teoverlapunique]] <- as.character(transposonsgff$order)[subjectHits(teoverlap)[teoverlapunique]]
-
+  #Assign miRNAs information as seperate columns
+  seqlevels(miRNA) <- seqlevels(locAnn)
+  miRNAoverlap <- findOverlaps(locAnn,miRNA)
+  #miRNA overlap should be unique anyway, but just in case, take first overlap
+  miRNAoverlapunique <- !rev(duplicated(rev(queryHits(teoverlap))))
+  #Assign geneID
+  locAnn$miRNAGeneID <- rep("none", length(locAnn))
+  locAnn$miRNAGeneID[queryHits(miRNAoverlap)[miRNAoverlapunique]] <- as.character(miRNA$GeneID[subjectHits(miRNAoverlap)[miRNAoverlapunique]])
+  #AssignLocation
+  locAnn$miRNALocation <- rep("none", length(locAnn))
+  locAnn$miRNALocation[queryHits(miRNAoverlap)[miRNAoverlapunique]] <- as.character(miRNA$location[subjectHits(miRNAoverlap)[miRNAoverlapunique]])
+  #Assign previously described name
+  locAnn$miRNAPrevDes <- rep("none", length(locAnn))
+  locAnn$miRNAPrevDes[queryHits(miRNAoverlap)[miRNAoverlapunique]] <- as.character(miRNA$previouslyDescribed[subjectHits(miRNAoverlap)[miRNAoverlapunique]])
+  
   locAnn
 }
 
