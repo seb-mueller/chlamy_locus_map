@@ -30,7 +30,7 @@ library(mclust)
 library(baySeq)
 library(MKmisc)
 library(simpleboot)
-source(file.path(gitdir, "/Scripts/chlamy_source_code.R"))
+source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
 #####Load in and process segmentation, selecting significant loci#####
 load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
