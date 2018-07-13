@@ -11,7 +11,7 @@ segLocation <- "/home/bioinf/nem34/segmentation_with_externals.r_2015-11-12_17:5
 annoDir <- "/projects/nick_matthews/resources"
 #annoDir = "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentMap_II/Old_Annotation_Files"
 
-# hacky code for locus summary plots
+# code for locus summary plots
 # the locus map (not having selected loci yet, but after calculating loci likelihoods) is 'nct'
 load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
 nct<-segD

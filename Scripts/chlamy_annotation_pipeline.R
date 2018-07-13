@@ -57,7 +57,9 @@ compileAnnotations(annoDir)
 gr7 <- sizeClass(gr7,annoDir)
 
 # annotate with overlapping features
-gr7 <- featureAnn(gr7, annoDir)
+gr7 <- featureAnn(gr7)
+
+gr7 <- expressionClass(gr7)
 
 # annotate with counting biases; i.e, is there a higher than average ratio of 21s to 20s, or a higher number of reads starting with As than usual
 cl <- makeCluster(24)
