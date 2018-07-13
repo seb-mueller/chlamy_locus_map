@@ -2,11 +2,23 @@
 #Adapted by Nick Matthews from code written by Tom Hardcastle and Sebastian Muller
 #Date: 09/02/16
 
-#set working directory to github repository on cluster
-setwd("/projects/nick_matthews/chlamy_locus_map_github")
-#setwd("C:/Users/Nick/Documents/Uni Work/Third Year/Project/chlamy_locus_map")
+###### setting variables
 
-#Load necesary libraries
+fdr <- 0.05
+
+# Specify location of segmentation
+segLocation <- "/projects/nick_matthews/segmentation_2018/"
+annoDir     <- "/projects/nick_matthews/resources"
+#set working directory to github repository on cluster
+gitdir      <- "/projects/nick_matthews/chlamy_locus_map_github"
+setwd(gitdir)
+
+cl <- makeCluster(24)
+# using instead of arbitray versions
+# e.g. "1f6085a"
+gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
+
+##### Load necesary libraries
 library(xtable)
 library(rtracklayer)
 library(reshape)
@@ -18,30 +30,25 @@ library(mclust)
 library(baySeq)
 library(MKmisc)
 library(simpleboot)
-source("./scripts/chlamy_source_code.r")
-
-#Specify location of segmentation
-segLocation <- "/home/bioinf/nem34/segmentation_with_externals.r_2015-11-12_17:56:17.079066"
-#segLocation <- "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentation_with_externals.r_2015-11-12_17/"
-annoDir <- "/projects/nick_matthews/resources"
+source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
 #####Load in and process segmentation, selecting significant loci#####
 load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
 
 # Select loci based on some fdr
-loci7 <- selectLoci(segD, FDR = 0.1, perReplicate = TRUE) #
+loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE) #
 
 ## creating/exporting coordinates object
-gr7 <- loci7@coordinates 
+gr <- loci@coordinates
 
 # name the loci 'CR' - chlamydomonas reinhardtii, 'SL' - srna locus
-names(gr7) <- sprintf("CRSL%05.f0",1:length(gr7))
+names(gr) <- sprintf("CRSL%05.f0", 1:length(gr))
 
-#load("gr7_just_cb.RData") #load gr7 you want to add to it...
+#load("gr_just_cb.RData") #load gr you want to add to it...
 
 # export as gff3 file for viewing in browser
-export.gff3(gr7,con="loci7_fdr01.gff3")
-#import.gff3("loci7_fdr01.gff3")
+export.gff3(gr, con = file.path(segLocation, paste0("loci_fdr",myfdr, ".gff")))
+#import.gff3("loci_fdr01.gff3")
 
 #####These next few functions compute and compile annotation files, this shouldn't need runnding every time#####
 #Compute introns - this takes a while, don't run unless necessary
@@ -50,47 +57,49 @@ export.gff3(gr7,con="loci7_fdr01.gff3")
 transposonProcess(annoDir)
 #Compute and compiles annotations
 compileAnnotations(annoDir)
-#####the next set of functions take the annotated locus object 'gr7' and add some more annotation data#####
-#The functions are found 'chlamy_source_code.R' 
+#####the next set of functions take the annotated locus object 'gr' and add some more annotation data#####
+#The functions are found 'chlamy_source_code.R'
 
 # annotate by size class
-gr7 <- sizeClass(gr7,annoDir)
+gr <- sizeClass(gr,annoDir)
 
 # annotate with overlapping features
+<<<<<<< HEAD
 gr7 <- featureAnn(gr7)
 
 gr7 <- expressionClass(gr7)
+=======
+gr <- featureAnn(gr, annoDir)
+>>>>>>> 8988837e4549e124efbef5886408955660684cdd
 
 # annotate with counting biases; i.e, is there a higher than average ratio of 21s to 20s, or a higher number of reads starting with As than usual
-cl <- makeCluster(24)
-gr7 <- countingBiases(gr7,cl,segLocation)
+gr <- countingBiases(gr,cl,segLocation)
 stopCluster(cl)
 
 #Old methylation function - may still be usefull, picks up a lot more methylation
-gr7<-methylation1(gr7,annoDir)
+gr <-methylation1(gr,annoDir)
 
 #New methylation functions
-gr7<-methylation2(gr7,annoDir)
-gr7 <- methylationDiff(gr7annoDir) #Almost no results - very small datasets
+gr <- methylation2(gr,annoDir)
+gr <- methylationDiff(grannoDir) #Almost no results - very small datasets
 
 #Extra Current annotations
-gr7<-strainSpec(gr7,loci7)
-gr7<-lifeCycle(gr7,loci7)
-gr7<-mutantSpec(gr7,loci7)
-gr7 <- phaseMatch(gr7)
+gr <- strainSpec(gr, loci)
+gr <- lifeCycle(gr, loci)
+gr <- mutantSpec(gr, loci)
+gr <- phaseMatch(gr)
 
 #Other functions which were done for arabidopsis
 
-#gr7 <- histoneAnnotate(gr7)
+#gr <- histoneAnnotate(gr)
 #cl <- makeCluster(24)
-#gr7 <- methAnnotate(gr7, cl)
+#gr <- methAnnotate(gr, cl)
 #stopCluster(cl)
-#gr7 <- tissueSpec(gr7, loci7) #adapted for zygotes, key mutants, strains
-#gr7 <- agoIP(gr7, loci7)
+#gr <- tissueSpec(gr, loci) #adapted for zygotes, key mutants, strains
+#gr <- agoIP(gr, loci)
 #cl <- makeCluster(24)
-#Pol45(gr7, cl)
+#Pol45(gr, cl)
 #stopCluster(cl)
-#gr7 <- annPol(gr7)
+#gr <- annPol(gr)
 #Save file
-save(gr7,loci7,file="gr7_all.rdata")
-
+save(gr, loci, file = file.path(segLocation, paste0("gr_fdr", fdr, "_", gitfingerprint, ".RData")))
