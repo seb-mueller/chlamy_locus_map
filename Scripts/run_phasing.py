@@ -54,7 +54,7 @@ if __name__=='__main__':
     nsize = 21
     
     #Define location of the file containing the loci definition
-    zname = '/projects/nick_matthews/resources/lociforphasing.csv'
+    zname = '/projects/nick_matthews/phasing/loci_for_phasing.csv'
     loci_handle = open(zname)
     print 'loci file being used is:%s' % zname
     #Read the loci file from segmentSeq

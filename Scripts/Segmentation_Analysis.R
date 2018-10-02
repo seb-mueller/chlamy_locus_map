@@ -7,16 +7,18 @@ library(segmentSeq)
 #setwd("C:/Users/Nick/Documents/Uni Work/Third Year/Project/chlamy_locus_map")
 #Specify location of segmentation
 segLocation <- "/home/bioinf/nem34/segmentation_with_externals.r_2015-11-12_17:56:17.079066"
-#segLocation <- "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentation_with_externals.r_2015-11-12_17/"
+#segLocation <- "C:/Users/Nick/Documents/PhD/Projects/Chlamy/"
 annoDir <- "/projects/nick_matthews/resources"
-#annoDir = "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentMap_II/Old_Annotation_Files"
+#annoDir = "C:/Users/Nick/Documents/PhD/Projects/Chlamy/chlamy_locus_map/"
 
 # code for locus summary plots
 # the locus map (not having selected loci yet, but after calculating loci likelihoods) is 'nct'
-load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
+load(file.path(segLocation,"segD_chlamy_segmentation_multi200_gap100.RData"))
 nct<-segD
                                         
 master<-read.csv("Summary_of_Data.csv")
+master <- read.csv(file.path("C:/Users/Nick/Documents/PhD/Projects/Chlamy/chlamy_locus_map/","Summary_of_Data.csv"))
+master <- master[master$InCurrentLociRun.1 == "Yes",]
 #To select apparent 'WT' - i.e. non-mutants
 #wt<-subset(master,master[,"Ecotype"] =="wt")
 #wtReps<-unique(wt[,"Replicate"])
