@@ -11,9 +11,9 @@ segLocation <- "/projects/nick_matthews/segmentation_2018/"
 annoDir     <- "/projects/nick_matthews/resources"
 #set working directory to github repository on cluster
 gitdir      <- "/projects/nick_matthews/chlamy_locus_map_github"
+inputdata <- "segD_first_chlamy_segmentation_nick.RData"
 setwd(gitdir)
 
-cl <- makeCluster(24)
 # using instead of arbitray versions
 # e.g. "1f6085a"
 gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
@@ -21,19 +21,21 @@ gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
 ##### Load necesary libraries
 library(xtable)
 library(rtracklayer)
-library(reshape)
 library(segmentSeq)
-library(pROC)
+# library(pROC)
 library(MASS)
 library(RColorBrewer)
 library(mclust)
 library(baySeq)
-library(MKmisc)
-library(simpleboot)
+# library(MKmisc)
+# library(simpleboot)
 source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
+cl <- makeCluster(24)
+
 #####Load in and process segmentation, selecting significant loci#####
-load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
+# load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
+load(file.path(segLocation, inputdata))
 
 # Select loci based on some fdr
 loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE) #
