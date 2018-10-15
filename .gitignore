@@ -1,4 +1,5 @@
 # condor files
+Key_Coding_Scripts
 Scripts/stdout-*
 Scripts/log-*
 Scripts/error-*
@@ -9,6 +10,9 @@ Scripts/condor-*
 
 # Session Data files
 .RData
+
+*.rdata
+*.Rdata
 
 # Example code in package build process
 *-Ex.R
