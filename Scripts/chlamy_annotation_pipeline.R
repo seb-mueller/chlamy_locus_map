@@ -61,6 +61,8 @@ names(gr) <- sprintf("CRSL%05.f0", 1:length(gr))
 # export as gff3 file for viewing in browser
 export.gff3(gr, con = file.path(segLocation, paste0("loci_fdr", fdr, "_", prefix, ".gff")))
 #import.gff3("loci_fdr01.gff3")
+#Write csv for phasing
+write.csv(as.data.frame(gr),file="/projects/nick_matthews/phasing/loci_for_phasing.csv")
 
 #####These next few functions compute and compile annotation files, this shouldn't need runnding every time#####
 #Compute introns - this takes a while, don't run unless necessary
@@ -77,13 +79,8 @@ compileAnnotations(annoDir)
 gr <- sizeClass(gr,annoDir)
 
 # annotate with overlapping features
-<<<<<<< HEAD
-gr7 <- featureAnn(gr7)
-
-gr7 <- expressionClass(gr7)
-=======
+gr <- expressionClass(gr, loci)
 gr <- featureAnn(gr, annoDir)
->>>>>>> 8988837e4549e124efbef5886408955660684cdd
 
 # annotate with counting biases; i.e, is there a higher than average ratio of 21s to 20s, or a higher number of reads starting with As than usual
 gr <- countingBiases(gr,cl,segLocation)
@@ -94,13 +91,15 @@ gr <-methylation1(gr,annoDir)
 
 #New methylation functions
 gr <- methylation2(gr,annoDir)
-gr <- methylationDiff(grannoDir) #Almost no results - very small datasets
+# gr <- methylation(gr,annoDir)
+#gr <- methylationDiff(gr,annoDir) #Almost no results - very small datasets
+#gr <- methylationDiff(grannoDir) #Almost no results - very small datasets
 
 #Extra Current annotations
 gr <- strainSpec(gr, loci)
 gr <- lifeCycle(gr, loci)
 gr <- mutantSpec(gr, loci)
-gr <- phaseMatch(gr)
+# gr <- phaseMatch(gr)
 
 #Other functions which were done for arabidopsis
 
