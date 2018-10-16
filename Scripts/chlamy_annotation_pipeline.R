@@ -1,44 +1,54 @@
 #Script for running annotation functions
 #Adapted by Nick Matthews from code written by Tom Hardcastle and Sebastian Muller
 #Date: 09/02/16
-
-###### setting variables
-
-fdr <- 0.05
-
-# Specify location of segmentation
-segLocation <- "/projects/nick_matthews/segmentation_2018/"
-annoDir     <- "/projects/nick_matthews/resources"
-#set working directory to github repository on cluster
-gitdir      <- "/projects/nick_matthews/chlamy_locus_map_github"
-inputdata <- "segD_first_chlamy_segmentation_nick.RData"
-setwd(gitdir)
-
-# using instead of arbitray versions
-# e.g. "1f6085a"
-gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
-
 ##### Load necesary libraries
+library(stringr)
 library(xtable)
 library(rtracklayer)
 library(segmentSeq)
 # library(pROC)
 library(MASS)
 library(RColorBrewer)
-library(mclust)
+# library(mclust)
 library(baySeq)
 # library(MKmisc)
 # library(simpleboot)
 source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
+###### setting variables
+
+fdr <- 0.05
+
+# Specify location of segmentation
+segLocation <- "/projects/nick_matthews/segmentation_2018"
+annoDir     <- "/projects/nick_matthews/resources"
+#set working directory to github repository on cluster
+gitdir      <- "/projects/nick_matthews/chlamy_locus_map_github"
+
+list.files(segLocation, pattern = "segD.*")
+inputdata <- "segD_chlamy_segmentation_multi200_gap100.RData" #13739
+# inputdata <- "segD_chlamy_segmentation_smallset_200.RData" # 2loci
+# inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian100.RData" #8977
+# inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian200.RData" #8158
+prefix <- str_replace(inputdata, "segD_chlamy_segmentation(.*).RData", "\\1")
+# [1] "multi200_wt_adrian200"
+setwd(gitdir)
+
+# using instead of arbitray versions
+# e.g. "1f6085a"
+gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
+
 cl <- makeCluster(24)
 
 #####Load in and process segmentation, selecting significant loci#####
 # load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
+# loads segD object (lociData class)
 load(file.path(segLocation, inputdata))
 
 # Select loci based on some fdr
-loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE) #
+# perReplicate: If TRUE, selection of loci is done on a replicate by replicate basis. If FALSE, selection will be done on the likelihood that the locus represents a true locus in at least one replicate group.
+loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = FALSE) #
+# loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = TRUE) # a a  
 
 ## creating/exporting coordinates object
 gr <- loci@coordinates
@@ -49,13 +59,14 @@ names(gr) <- sprintf("CRSL%05.f0", 1:length(gr))
 #load("gr_just_cb.RData") #load gr you want to add to it...
 
 # export as gff3 file for viewing in browser
-export.gff3(gr, con = file.path(segLocation, paste0("loci_fdr",myfdr, ".gff")))
+export.gff3(gr, con = file.path(segLocation, paste0("loci_fdr", fdr, "_", prefix, ".gff")))
 #import.gff3("loci_fdr01.gff3")
 
 #####These next few functions compute and compile annotation files, this shouldn't need runnding every time#####
 #Compute introns - this takes a while, don't run unless necessary
 #intronCalculate()
 #Process transposon file
+
 transposonProcess(annoDir)
 #Compute and compiles annotations
 compileAnnotations(annoDir)
