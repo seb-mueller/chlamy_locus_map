@@ -13,15 +13,15 @@ compileAnnotations <- function(annoDir = "/projects/nick_matthews/resources") {
   #Specify what libraries are required
   require(GenomicRanges)
   require(rtracklayer)
-  
+
   #Load large transposon file
   load(file.path(annoDir,"transposon_annotations.Rdata"))
   #Load in irs and trs data
   irs <- import.gff3(file.path(annoDir,"irf_output_Creinhardtii_236.gff"))
 	irs$type<-irs$source
 	trs <- import.gff3(file.path(annoDir,"trf_output_Creinhardtii_236.gff"))
-	trs$type<-trs$source       
-  
+	trs$type<-trs$source
+
   #Load in miRNA data
   #TODO check miRNA file for correspondance to Adrian's paper list
   miRNA <- import.gff3(file.path(annoDir,"Vallietal2016_miRNAs.gff3"))
@@ -31,7 +31,7 @@ compileAnnotations <- function(annoDir = "/projects/nick_matthews/resources") {
 	#Load in MSAT data
 	MSAT <- import.gff3(file.path(annoDir,"Creinhardtii_MSAT.gff3"))
 
-	#Load in annotation data from v5.5 chlamy annotation                                
+	#Load in annotation data from v5.5 chlamy annotation
 	anno <- import.gff3(file.path(annoDir,"Creinhardtii_281_v5.5.gene_exons.gff3"))
 	#Extract from genes data the relevant subsets
   mRNA <- anno[anno$type=="mRNA",]
@@ -40,23 +40,23 @@ compileAnnotations <- function(annoDir = "/projects/nick_matthews/resources") {
 	CDS<-anno[anno$type=="CDS",]
 	threeprimeUTR<-anno[anno$type=="three_prime_UTR",]
 	fiveprimeUTR<-anno[anno$type=="five_prime_UTR",]
-  
+
 	#Calculate promoter region the 500bp flanking region around gene
 	#TODO check this, surely the promoter region is the 500bp upstream... use gene or mRNA?
   promoter <- promoters(anno[anno$type=="mRNA"],upstream=500,downstream=0)
   promoter$type <- droplevels(promoter$type)
   levels(promoter$type) <- "promoter"
-  
+
   #Load in intron file, calculated seperately using intronCalculate file
   introns <- import.gff3(file.path(annoDir,"Creinhardtii_281_v5.5.CalculatedIntrons.gff3"))
   levels(introns$type) <- "intron"
-        
-  #Puts all annotations together just incase it's useful        
+
+  #Puts all annotations together just incase it's useful
 	# everything<-c(irs[,1:2],trs[,1:2],miRNA[,1:2],rRNA[,1:2],MSAT[,1:2],mRNA[,1:2],genes[,1:2],
 	#               exons[,1:2],CDS[,1:2],threeprimeUTR[,1:2],fiveprimeUTR[,1:2],promoter[,1:2],
 	#               transposons[,1:2],introns[,1:2])
-  
-	#Save all as one big RData file   
+
+	#Save all as one big RData file
 	save(genes,anno,
 	     transposons, repetativeSeq, TE_Class_DNA, TE_Class_RET,
 	     TE_Undefined,TE_L1,TE_Gypsy,TE_Copia,TE_hAT,TE_RTE,TE_Novosib,TE_DualenRandI,
@@ -83,7 +83,7 @@ computeOverlaps <- function(locAnn,annotations,assignNames = FALSE,  namesColumn
     if(assignNames == FALSE) {
       locAnn$temp[queryHits(overlap)[overlapunique]] <- TRUE
     } else if(assignNames == TRUE) {
-      #If assigning names takes the 
+      #If assigning names takes the
       locAnn$temp[queryHits(overlap)[overlapunique]] <- as.character(pull(annotation,namesColumn))[subjectHits(overlap)[overlapunique]]
     } else {
       warning("assignNames must be either TRUE or FALSE")
@@ -102,20 +102,20 @@ intronCalculate <- function(annoDir = "/projects/nick_matthews/resources") {
   require(tidyverse)
   require(GenomicRanges)
   require(rtracklayer)
-  
+
   #####Load in dataset#####
   allGenes <- import.gff3(file.path(annoDir,"Creinhardtii_281_v5.5.gene_exons.gff3"))
-  
+
   #Let's explore the data
   widths <- data.frame(type = c(), width = c())
   widths <- data.frame(type=c(as.character(unique(allGenes$type))),
                        width=sapply(unique(allGenes$type),function(x) mean(width(allGenes[allGenes$type==x]))))
-  
+
   #####Extract exonic sequences#####
   genes <- allGenes[allGenes$type=="gene",]
   exons <- allGenes[allGenes$type=="exon",]
   mRNA <- allGenes[allGenes$type=="mRNA",]
-  
+
   #####Derive intronic sequences#####
   #remove mRNA which don't have at least two exons overlapping them - therefore wouldn't have an intron by definition
   exons <- unique(exons)
@@ -141,10 +141,10 @@ intronCalculate <- function(annoDir = "/projects/nick_matthews/resources") {
     }
     introns
   })
-  
+
   #Unlist into one GRanges object
   introns <- unlist(intronList)
-  
+
   #Save introns as gff3 file
   export.gff3(introns,file.path(annoDir,"Creinhardtii_281_v5.5.CalculatedIntrons.gff3"))
 }
@@ -185,7 +185,7 @@ transposonProcess <- function(annoDir = "/projects/nick_matthews/resources",keep
   export.gff3(repetativeSeq, file.path(annoDir,"Creinhardtii_281_v5.5.repeatmaskedannotated_assembly_v5.0.gff3"))
   export.gff3(TE_Class_DNA, file.path(annoDir,"Creinhardtii_281_v5.5.DNAtransposonsfromrepeatmasked_assembly_v5.0.gff3"))
   export.gff3(TE_Class_RET, file.path(annoDir,"Creinhardtii_281_v5.5.RETtransposonsfromrepeatmasked_assembly_v5.0.gff3"))
-  
+
   #extract major Orders
   orders <- unique(transposons$order)
   for(ii in 1:length(orders)) {
@@ -196,7 +196,7 @@ transposonProcess <- function(annoDir = "/projects/nick_matthews/resources",keep
     #Assign to object in environment for saving
     assign(paste0("TE_Order_",orders[ii]),temp)
   }
-  
+
   #Now do the same for all the superfamilies
   superfamilies <- unique(transposons$superfamily)
   for(ii in 1:length(superfamilies)) {
@@ -207,7 +207,7 @@ transposonProcess <- function(annoDir = "/projects/nick_matthews/resources",keep
     #Assign to object in environment for saving
     assign(paste0("TE_",superfamilies[ii]),temp)
   }
-  
+
   #Export as consolidated Rdata file
   save(transposons, repetativeSeq, TE_Class_DNA, TE_Class_RET,
        TE_Order_LTR,TE_Order_LINE,TE_Order_TIR,TE_Order_SINE,TE_Order_DIRS,
@@ -226,31 +226,37 @@ assignCI <- function(cis, windows, comma) {
   if(any(z == 1, na.rm = TRUE))
     asswin[which(z == 1)] <- intwin[cbind(which(z == 1), apply(abs(intwin[which(z == 1),] - (comma + 1)), 1, which.min))]
   classIDs <- names(windows)[asswin]
-  
+
   classIDs <- ordered(as.factor(classIDs), levels = names(windows)[-length(windows)])
   #    classIDs <- apply(cbind(c(-Inf, log2(divisions)), c(log2(divisions), Inf)), 1, paste, collapse = ",")[asswin]
-  #    classIDs    
+  #    classIDs
 }
 
 #Needed to compute confidence intervals in countingBiases function
 classCI <- function(x1, x2, probs, divisions, comma, plot = TRUE,plotname) {
+  require(MKmisc) # binomCI function
   if(missing(probs))
     probs <- 1 / (1 + 1/ divisions)
   windows <- c(low = -Inf, probs, infinite = Inf)
-  
+  # low      med     high infinite
+  # -Inf      0.3      0.7      Inf
+
   if(is.null(names(probs))) names(windows) <- apply(cbind(c(-Inf, round(probs,3)), round(c(probs, Inf), 3)), 1, paste, collapse = "-")
-  
-  ratioCI <- apply(cbind(x1, x2), 1, function(x) binomCI(x[1], sum(x), method = "modified jeffreys")$CI)    
-  
+
+  # binomCI function can be used to compute confidence intervals for binomial proportions.
+# seb: CI gives NULL, using conf.int instead. How could that ever have worked? Found it in Toms other code snipptes as well??
+  # ratioCI <- apply(cbind(x1, x2), 1, function(x) binomCI(x[1], sum(x), method = "modified jeffreys")$CI)
+  ratioCI <- apply(cbind(x1, x2), 1, function(x) binomCI(x[1], sum(x), method = "modified jeffreys")$conf.int)
+
   #    plot(density(log10(ratioCI[1,]), na.rm = TRUE)); abline(v = log10(probs))
   #    plot(density(ratioCI[1,], na.rm = TRUE, from = 0, to = 1)); abline(v = (probs))
   #    plot(density(log10(ratioCI[2,]), na.rm = TRUE)); abline(v = log10(probs))
   #    plot(density(ratioCI[2,], na.rm = TRUE, from = 0, to = 1)); abline(v = (probs))
-  
+
   classIDs <- assignCI(ratioCI, windows, comma)
   pdf(plotname)
   plot(density(log10(colMeans(ratioCI[,!is.na(classIDs)])), na.rm = TRUE)); abline(v = log10(probs))
-  
+
   plot(density(colMeans(ratioCI[,!is.na(classIDs)]), na.rm = TRUE, from = 0, to = 1)); abline(v = (probs))
   p2r <- function(p) 1 / ((1 / p) - 1)
   plot(density(log2(p2r(colMeans(ratioCI[,!is.na(classIDs)]))))); abline(v = log2(p2r(probs)))
@@ -258,9 +264,9 @@ classCI <- function(x1, x2, probs, divisions, comma, plot = TRUE,plotname) {
   plot(density((ratioCI[1,!is.na(classIDs)]), na.rm = TRUE, from = 0, to = 1)); abline(v = (probs))
   plot(density(log10((ratioCI[2,!is.na(classIDs)])), na.rm = TRUE)); abline(v = log10(probs))
   plot(density((ratioCI[2,!is.na(classIDs)]), na.rm = TRUE, from = 0, to = 1)); abline(v = (probs))
-  
+
   dev.off()
-  
+
   classIDs
 }
 
@@ -287,7 +293,7 @@ chromosomeLociTable <- function(mapName, mapLocation = "/projects/nick_matthews/
                         48183,42264,39192,33576,32450,25399,24537,24437,22408,22082,
                         21325,21000,20974,17736,16939,16627,14746,14165,13462,
                         12727,11225,6241,2479,2277))
-  #Now calculate loci 
+  #Now calculate loci
   summaryTable$LociIdentified <- apply(summaryTable,1,function(x) sum(seqnames(loci) == x[1]))
   summaryTable$LociDensity <- summaryTable$LociIdentified/summaryTable$Length*1000000
   summaryTable
@@ -300,7 +306,7 @@ annotationSummaryTable <- function(mapFile , mapDir,specificAnnotations = FALSE,
   require(GenomicRanges)
   require(rtracklayer)
   require(dplyr)
-  #Load in annotated file 
+  #Load in annotated file
   load(file.path(mapDir, mapFile))
   #load("gr7_all_anno.Rdata")
   #Assign file
@@ -347,7 +353,7 @@ annotationSummaryTable <- function(mapFile , mapDir,specificAnnotations = FALSE,
   summaryTable
   #write.csv(summaryTable,"test.csv",row.names = FALSE)
 }
-  
+
 #This function generates a summary table for each of the clusters for either all annotations or a given set of annotations
 clusterAnnotationTable <- function(clusteredMapFile, mapDir) {
   #Load in required functions
@@ -402,7 +408,7 @@ expressionClass <- function(locAnn,loci) {
   #Require packages
   require(GenomicRanges)
   require(rtracklayer)
-  
+
   #Extracts wild type samples from CSV and computes commonality of expression
   #TODO this needs to link to latest csv
   #Read in summary data file for reference
@@ -426,25 +432,25 @@ expressionClass <- function(locAnn,loci) {
 #TODO edit firs base function so it only identifies first base
 #TODO check repetativeness calculation - I seem to remember this having some problems in the past
 countingBiases <- function(locAnn, cl, segLocation = "/projects/nick_matthews/segmentation_2018") {
-  
+
   #Firstly load in raw alignment data
   load(file.path(segLocation,"aD_chlamy_segmentation__multi200_gap100.RData")) #aD #alignmentData
   colnames(values(aD@alignments))[2] <- "multireads"
-  
+
   #Read in summary data file for reference
   samples <- read.csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv",header=TRUE)
   #Filter out rows of any samples left out
   samples <- samples[samples$InCurrentLociRun == "Yes",]
   #extract any samples which are considered genuine controls
   wt <- samples$Controls %in% c("wt")
-  
+
   #Extract raw widths from the aD object for key wt libraries
   aDwidths <- width(aD@alignments)
   aDnormal <- aD[aDwidths>19 & aDwidths < 22,] #Either 20 or 21 as those are clearly the peaks in the distribution
   #Remove any multi-reads..
   aDnormalnomulti <- aDnormal[!duplicated(as.character(aDnormal@alignments$tag)),]
   aDwidths <- width(aDnormal@alignments)
-  
+
   #Looking at first nucleotide biases
   #Find first nucleotide
   firstNuc <- substr(aDnormal@alignments$tag,1,1)
@@ -453,7 +459,7 @@ countingBiases <- function(locAnn, cl, segLocation = "/projects/nick_matthews/se
   #table(firstNucnomulti)/length(firstNucnomulti)
   # find normal ratio of first base nucleotides
   expectedRatio <-  tapply(rowSums(aDnormalnomulti@data),firstNucnomulti,sum)/sum(aDnormalnomulti@data)
-  # get counts in each locus 
+  # get counts in each locus
   aDA <- aDnormal[firstNuc=="A",]
   countsA <- getCounts(segments=locAnn,aD=aDA,cl=cl); rm(aDA)
   locAnn$countsA <- rowSums(countsA[,wt])
@@ -478,18 +484,15 @@ countingBiases <- function(locAnn, cl, segLocation = "/projects/nick_matthews/se
   pred <- apply(do.call("cbind", lapply(1:4, function(ii) c("", c("A", "C", "G", "T")[ii])[as.integer(zq[,ii] < 0.01) + 1])), 1, paste, collapse = "")
   pred[pred == ""] <- NA
   locAnn$predominant_5prime_letter <- as.factor(pred)
-  
+
   #Looking at biases in sides of sRNAs
   # counting numbers of 20s and 21s
   aDs <- aD[width(aD@alignments)<20,]
   countsSmall <- getCounts(segments=locAnn,aD=aDs,cl=cl); rm(aDs)
-  countsSmallwt <- countss[,wt]
+  countsSmallwt <- countsSmall[,wt]
   aD20 <- aD[width(aD@alignments)==20,]
   counts20 <- getCounts(segments=locAnn,aD=aD20,cl=cl); rm(aD20)
   counts20wt <- counts20[,wt]
-  aD21 <- aD[width(aD@alignments)==21]
-  counts21 <- getCounts(segments=locAnn,aD=aD21,cl=cl); rm(aD21)
-  counts21wt <- counts21[,wt]
   aD21 <- aD[width(aD@alignments)==21]
   counts21 <- getCounts(segments=locAnn,aD=aD21,cl=cl); rm(aD21)
   counts21wt <- counts21[,wt]
@@ -498,40 +501,40 @@ countingBiases <- function(locAnn, cl, segLocation = "/projects/nick_matthews/se
   countsnormwt <- countsnorm[,wt]
   aDb <- aD[width(aD@alignments)>21,]
   countsBig <- getCounts(segments=locAnn,aD=aDb,cl=cl); rm(aDb)
-  countsBigwt <- countsb[,wt]
+  countsBigwt <- countsBig[,wt]
 
   #sRNA size ratio
-  #this part computes confidence intervals on the ratio of 20s and 21s for each locus, and then uses that to put each locus in a window. 
+  #this part computes confidence intervals on the ratio of 20s and 21s for each locus, and then uses that to put each locus in a window.
   #This part will produce a plot of the density of the mean (and the log of the mean) of the confidence intervals; choose the 'probs' values in such a way to split the modes of the density plots.
   #TODO generate plots and choose appropriate probs values for sRNA length biases
-  
+
   #Assign counts to locAnn
   locAnn$counts20 <- rowSums(counts20wt)
   locAnn$counts21 <- rowSums(counts21wt)
-  locAnn$countsSmall <- rowSums(countsswt)
-  locAnn$countsBig <- rowSums(countsbwt)
+  locAnn$countsSmall <- rowSums(countsSmallwt)
+  locAnn$countsBig <- rowSums(countsBigwt)
   locAnn$countsNormal <- rowSums(countsnormwt)
-  
+
   #For 21 vs 20 ratio
   locAnn$ratio21vs20 <- log2((rowSums(counts21wt))/(rowSums(counts20wt)))
   locAnn$ratio21vs20[(locAnn$counts20+locAnn$counts21)<=5] <- NaN
   locAnn$ratio21vs20Class <- classCI(locAnn$counts21, locAnn$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
-  
+
   #For 20 vs 21 ratio
   locAnn$ratio20vs21 <- log2((rowSums(counts20wt))/(rowSums(counts21wt)))
   locAnn$ratio20vs21[(locAnn$counts20+locAnn$counts21)<=5] <- NaN
-  locAnn$ratio20vs21Class <- classCI(locAnn$counts20, locAnn$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")	
-  
+  locAnn$ratio20vs21Class <- classCI(locAnn$counts20, locAnn$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")
+
   #For small RNAs vs Normal RNAs
-  locAnn$ratioSmallvsNormal <- log2((rowSums(countsswt))/(rowSums(countsnormwt)))
+  locAnn$ratioSmallvsNormal <- log2((rowSums(countsSmallwt))/(rowSums(countsnormwt)))
   locAnn$ratioSmallvsNormal[(locAnn$countsSmall+locAnn$countsNormal)<=5] <- NaN
   locAnn$ratioSmallvsNormalClass <- classCI(locAnn$countsSmall, locAnn$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="SmallvsNormal_0.3_0.7.pdf")
-  
+
   #For big RNAs vs Normal RNAs
-  locAnn$ratioBigvsNormal <- log2((rowSums(countsbwt))/(rowSums(countsnormwt)))
+  locAnn$ratioBigvsNormal <- log2((rowSums(countsBigwt))/(rowSums(countsnormwt)))
   locAnn$ratioBigvsNormal[(locAnn$countsBig+locAnn$countsNormal)<=5] <- NaN
   locAnn$ratioBigvsNormalClass <- classCI(locAnn$countsBig, locAnn$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="BigvsNormal_0.3_0.7.pdf")
-  
+
   #Calculate strand biases - phased loci should be strongly biased
   #TODO generate plots and choose appropriate probs values for strand biases
   # as above, but now looking at strand biases (i.e., whether most of the sRNAs are on the same strand, or evenly split across strands)
@@ -541,27 +544,27 @@ countingBiases <- function(locAnn, cl, segLocation = "/projects/nick_matthews/se
   countsallwt <- countsall[,wt]
   countsminuswt <- countsminus[,wt]
   countspluswt <- countsplus[,wt]
-  
+
   #strand bias
   locAnn$countsminus <- rowSums(countsminuswt)
   locAnn$countsplus <- rowSums(countspluswt)
   locAnn$ratio_strand <- log2((rowSums(countsminuswt))/(rowSums(countspluswt)))
   locAnn$ratio_strand[(locAnn$countsminus+locAnn$countsplus)<=5] <- NaN
   locAnn$ratio_strand_abs <- abs(locAnn$ratio_strand)
-  
+
   # confidence intervals on strands, as before
   locAnn$ratio_strand_class <- classCI(locAnn$countsplus, locAnn$countsminus,
                                        probs = c(0.1,0.35,0.65,0.9), comma = 1,plotname="plusvsminus2.pdf") #changed probs to 0.1 and 0.9 rather than 0.2 and 0.8
   levels(locAnn$ratio_strand_class) <- c("strong bias", "med bias", "no bias", "med bias", "strong bias")
-  
+
   ##computing repetetivness for each loci (total reads div by multi match corrected) - use full setof aD not aDnormal
   #TODO check repetativeness calculation - I seem to remember this having some problems in the past
   matches <- aD@alignments$multireads
   countswt <- getCounts(segments=locAnn,aD=aD,cl=cl)
   aD@data <-  aD@data/matches
-  
+
   countswtnorm <- getCounts(segments=locAnn,aD=aD,cl=cl)
-  
+
   locAnn$repetitiveness <- 1-(rowSums(countswtnorm)/rowSums(countswt))
   locAnn$repetitivenessClass <- as.ordered(cut(locAnn$repetitiveness,unique(quantile(locAnn$repetitiveness,probs=seq(0,1,0.25),na.rm=TRUE),include.lowest=TRUE))) #Added unique function
   levels(locAnn$repetitivenessClass) <- c("low","median","high","very_high")
@@ -578,20 +581,20 @@ lifeCycle <- function(locAnn, loci, FDR=0.05) {
   #Filter out rows of any samples left out
   samples <- samples[samples$InCurrentLociRun == "Yes",]
   #wt <- samples$Ecotype %in% c("wt")
-  #Control for genotype - probably not necessary?   
+  #Control for genotype - probably not necessary?
   #CC1883 <- samples$Genotype %in% c("CC1883")
-  
-  
+
+
   #locAnn$vegetative <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Vegetative" & CC1883)]))]) > 0
   locAnn$vegetative <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Vegetative")]))]) > 0
   #locAnn$zygote <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Zygote" & CC1883)]))]) > 0
   locAnn$zygote <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Zygote")]))]) > 0
-  
-  
+
+
   locAnn$vegetativespecific <- locAnn$vegetative & !locAnn$zygote
-  
+
   locAnn$zygotespecific <- locAnn$zygote & !locAnn$vegetative
-  
+
   locAnn
 }
 
@@ -603,15 +606,15 @@ strainSpec <- function(locAnn, loci, FDR=0.05) {
   samples <- read.csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv",header=TRUE)
   #Filter out rows of any samples left out
   samples <- samples[samples$InCurrentLociRun == "Yes",]
-  
+
   #wt <- samples$Controls %in% c("wt")
-  
+
   #Work out which strains the loci are present in
   locAnn$CC1883 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "CC1883")]))]) > 0
   locAnn$CC125 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "CC125")])),drop=FALSE]) > 0
   locAnn$CC4350 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "CC4350")])),drop=FALSE]) > 0
   locAnn$J <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "J")])),drop=FALSE]) > 0
-  
+
   #Assign any that are specific
   locAnn$CC1883specific <- locAnn$CC1883 & !(locAnn$CC125 | locAnn$J | locAnn$CC4350)
   locAnn$CC4350specific <- locAnn$CC4350 & !(locAnn$CC1883 | locAnn$CC125 | locAnn$J)
@@ -635,12 +638,12 @@ mutantSpec <- function(locAnn, loci,FDR=0.05) {
   locAnn$ago3Adrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$AdrianExp == "ago3")]))]) > 0
   locAnn$mutantAdrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(!samples$AdrianExp == "wt" & !samples$AdrianExp == "FALSE")]))]) > 0
   #locAnn$notdcl3Adrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(!samples$AdrianExp == "FALSE" & !samples$AdrianExp == "dcl3")]))]) > 0
-  
+
   #Specific to wild type from Adrian's experiments
   locAnn$wtAdrianspecific <- locAnn$wtAdrian & !locAnn$mutantAdrian
   #Specific to Adrian's mutants
   locAnn$mutantAdrianspecific <- locAnn$mutantAdrian & !locAnn$wtAdrian
-  
+
   #Specific to dcl3 related mutants
   locAnn$notDCL3dependent <- locAnn$dcl3Adrian & !locAnn$wtAdrian
   #Specifically not present in dcl3 mutants
@@ -660,24 +663,24 @@ phaseMatch <- function(locAnn,phasingDir = "/projects/nick_matthews/phasing") {
   rownames(beds) <- 1:nrow(beds)
   write.table(beds, col.names = TRUE, row.names = TRUE, file = file.path(phasingDir,"src/phasing_loci.txt"), quote = FALSE, sep = "\t")
   system("Scripts/run_phasing.py")
-  
-  tasi <- read.csv(file.path(phasingDir,"phasing_results_by_locus_21nt.tsv"),sep="\t",header=FALSE) 
+
+  tasi <- read.csv(file.path(phasingDir,"phasing_results_by_locus_21nt.tsv"),sep="\t",header=FALSE)
   #table(locAnn$cluster[tasi[,"V10"]< c(-5)] & tasi[,"V4"]< c(-5)])
   Phased <- rep("none",nrow(tasi))
-  
+
   #If in more than 5 libraries loci phasing significant at 0.05 significance level = "high", between 1 and 5 = "moderate"
   tasi[,4:166] <- exp(tasi[,4:166])
   tasi[,4:166] <- apply(tasi[,4:166], 2, function(x) {x[x<1] <- p.adjust(x[x < 1], method = "BH"); x})
   Phased[rowSums(tasi[,4:166] < 0.05)>1] <- "moderate"
   Phased[rowSums(tasi[,4:166] < 0.05)>5] <- "high"
-  
+
   tasi[,1] <- gsub("Chr", "", tasi[,1])
   tasmat <- match(apply(as.data.frame(locAnn)[,1:3], 1, function(x) paste(gsub(" ", "", x), collapse = ":")),
                   apply(as.data.frame(tasi)[,1:3], 1, function(x) paste(gsub(" ", "", x), collapse = ":")))
   locAnn$Phased <- "none"
-  locAnn$Phased[!is.na(tasmat)] <- Phased[tasmat[!is.na(tasmat)]]        
+  locAnn$Phased[!is.na(tasmat)] <- Phased[tasmat[!is.na(tasmat)]]
   locAnn$Phased <- ordered(as.factor(locAnn$Phased), levels = c("none", "moderate", "high"))
-  
+
   locAnn
 }
 
@@ -690,10 +693,10 @@ featureAnn <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
   #Require packages
   require(rtracklayer)
   require(GenomicRanges)
-  
+
   #load in annotations
   load(file.path(annoDir,"chlamy_all_annotations.Rdata"))
-    
+
   #Compute all simple annotations
   #First create list of annotations to apply
   annotations <- list(
@@ -707,13 +710,13 @@ featureAnn <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
   )
   #Then compute annotations
   locAnn <- computeOverlaps(locAnn,annotations)
-  
-  #Also compute intergenic regions 
+
+  #Also compute intergenic regions
   geneoverlap <- findOverlaps(locAnn,genes)
   geneoverlapunique <- unique(queryHits(geneoverlap))
   locAnn$intergenic <- rep(FALSE,length(locAnn))
   locAnn$intergenic[-geneoverlapunique] <- TRUE
-  
+
   #Assign miRNAs information as seperate columns
   seqlevels(miRNA) <- seqlevels(locAnn)
   miRNAoverlap <- findOverlaps(locAnn,miRNA)
@@ -728,7 +731,7 @@ featureAnn <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
   #Assign previously described name
   locAnn$miRNAPrevDes <- rep("none", length(locAnn))
   locAnn$miRNAPrevDes[queryHits(miRNAoverlap)[miRNAoverlapunique]] <- as.character(miRNA$previouslyDescribed[subjectHits(miRNAoverlap)[miRNAoverlapunique]])
-  
+
   locAnn
 }
 
@@ -750,7 +753,7 @@ methylation <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
 	methylation = list(methCG = methCG, methCHH = methCHH, methCHG = methCHG, methAll = methAll)
 	#Compute overlaps
 	locAnn <- computeOverlaps(locAnn,methylation)
-  
+
   locAnn
 }
 
@@ -765,8 +768,8 @@ methylationDiff <- function(locAnn, annoDir = "/projects/nick_matthews/resources
   methCHG=import.gff3(file.path(annoDir,"meth_data/Andy_differentialMeth_CHG.gff3"))
   #Ensure sequence levels are matched to the reference
 	seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(locAnn)
-  
-	#Extract differential methylation calls     
+
+	#Extract differential methylation calls
 	#for CG meth
 	methCG_wt <- methCG[methCG$ordering == "2>1"]
 	methCG_dcl3 <- methCG[methCG$ordering == "1>2"]
@@ -779,12 +782,12 @@ methylationDiff <- function(locAnn, annoDir = "/projects/nick_matthews/resources
 	#For all meth
 	methAll_wt <- c(methCG_wt, methCHH_wt, methCHG_wt)
 	methAll_dcl3 <- c(methCG_dcl3, methCHH_dcl3, methCHG_dcl3)
-	
+
 	#Compile methylation files
 	methylation = list(methCG_wt = methCG_wt, methCHH_wt = methCHH_wt, methCHG_wt = methCHG_wt, methAll_wt = methAll_wt,
 	                   methCG_dcl3 = methCG_dcl3, methCHH_dcl3 = methCHH_dcl3, methCHG_dcl3 = methCHG_dcl3, methAll_dcl3 = methAll_dcl3)
   #Compute overlaps
 	locAnn <- computeOverlaps(locAnn,methylation)
-	
+
 	locAnn
 }

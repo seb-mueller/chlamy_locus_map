@@ -11,28 +11,29 @@ library(MASS)
 library(RColorBrewer)
 # library(mclust)
 library(baySeq)
-# library(MKmisc)
+library(MKmisc)
 # library(simpleboot)
-source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
 ###### setting variables
 
 fdr <- 0.05
-
+baseDir <- "/projects/nick_matthews"
 # Specify location of segmentation
-segLocation <- "/projects/nick_matthews/segmentation_2018"
-annoDir     <- "/projects/nick_matthews/resources"
+segLocation <- file.path(baseDir, "segmentation_2018")
+annoDir     <- file.path(baseDir, "resources")
 #set working directory to github repository on cluster
-gitdir      <- "/projects/nick_matthews/chlamy_locus_map_github"
+gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
+source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
-list.files(segLocation, pattern = "segD.*")
+# list.files(segLocation, pattern = "segD.*")
 inputdata <- "segD_chlamy_segmentation_multi200_gap100.RData" #13739
 # inputdata <- "segD_chlamy_segmentation_smallset_200.RData" # 2loci
 # inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian100.RData" #8977
 # inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian200.RData" #8158
-prefix <- str_replace(inputdata, "segD_chlamy_segmentation(.*).RData", "\\1")
-# [1] "multi200_wt_adrian200"
-setwd(gitdir)
+prefix <- str_replace(inputdata, "segD_chlamy_segmentation_(.*).RData", "\\1")
+# [1] "multi200_gap100"
+saveLocation <- file.path(segLocation, prefix)
+dir.create(saveLocation)
 
 # using instead of arbitray versions
 # e.g. "1f6085a"
@@ -47,22 +48,27 @@ load(file.path(segLocation, inputdata))
 
 # Select loci based on some fdr
 # perReplicate: If TRUE, selection of loci is done on a replicate by replicate basis. If FALSE, selection will be done on the likelihood that the locus represents a true locus in at least one replicate group.
-loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = FALSE) #
-# loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = TRUE) # a a  
+
+# which setting are we using?
+loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = FALSE) # 8320
+# loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = TRUE) # 4915 (plus warning)
 
 ## creating/exporting coordinates object
 gr <- loci@coordinates
 
+# safe attributes in object  
+attr(gr, "parameter") <- prefix
+attr(gr, "git") <- gitfingerprint
 # name the loci 'CR' - chlamydomonas reinhardtii, 'SL' - srna locus
 names(gr) <- sprintf("CRSL%05.f0", 1:length(gr))
 
 #load("gr_just_cb.RData") #load gr you want to add to it...
 
 # export as gff3 file for viewing in browser
-export.gff3(gr, con = file.path(segLocation, paste0("loci_fdr", fdr, "_", prefix, ".gff")))
+export.gff3(gr, con = file.path(segLocation, paste0("loci_fdr", fdr, prefix, ".gff")))
 #import.gff3("loci_fdr01.gff3")
 #Write csv for phasing
-write.csv(as.data.frame(gr),file="/projects/nick_matthews/phasing/loci_for_phasing.csv")
+write.csv(as.data.frame(gr),file=file.path(baseDir, "phasing/loci_for_phasing.csv"))
 
 #####These next few functions compute and compile annotation files, this shouldn't need runnding every time#####
 #Compute introns - this takes a while, don't run unless necessary
@@ -76,7 +82,11 @@ compileAnnotations(annoDir)
 #The functions are found 'chlamy_source_code.R'
 
 # annotate by size class
-gr <- sizeClass(gr,annoDir)
+gr <- sizeClass(gr, intervals = c(0,30,75,150,1000,Inf))
+table(gr$sizeclass)
+# 
+#      (0,30]     (30,75]    (75,150] (150,1e+03] (1e+03,Inf] 
+#          51         130         335        4480        3324 
 
 # annotate with overlapping features
 gr <- expressionClass(gr, loci)
@@ -90,8 +100,8 @@ stopCluster(cl)
 gr <-methylation1(gr,annoDir)
 
 #New methylation functions
-gr <- methylation2(gr,annoDir)
-# gr <- methylation(gr,annoDir)
+# gr <- methylation2(gr,annoDir)
+gr <- methylation(gr,annoDir)
 #gr <- methylationDiff(gr,annoDir) #Almost no results - very small datasets
 #gr <- methylationDiff(grannoDir) #Almost no results - very small datasets
 
@@ -114,4 +124,4 @@ gr <- mutantSpec(gr, loci)
 #stopCluster(cl)
 #gr <- annPol(gr)
 #Save file
-save(gr, loci, file = file.path(segLocation, paste0("gr_fdr", fdr, "_", gitfingerprint, ".RData")))
+save(gr, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr, "_", gitfingerprint,  ".RData")))
