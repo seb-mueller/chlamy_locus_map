@@ -10,7 +10,13 @@ library(dplyr)
 datadir      <- "/projects/nick_matthews/segmentation_2018"
 mymultireads <- 200
 mygap        <- 100
-comment      <- paste0("_multi", mymultireads, "_gap", mygap) # goes in filenames
+comment      <- paste0("LociRun2018_multi", mymultireads, "_gap", mygap) # goes in filenames
+meta <- read_csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv")
+
+
+# selected libraries as discussed with Nick/Seb/Adrian (july2018)
+meta <- meta %>%
+    filter(LociRun2018 == "Yes")
 
 #Make cluster
 cl<-makeCluster(46)
@@ -35,12 +41,6 @@ chrs <- c("chromosome_1","chromosome_2","chromosome_3","chromosome_4","chromosom
 cols = c(chr = 1, tag = 10, start = 4, end = 5, count = 6, strand = 7)
 
 
-meta <- read_csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv")
-
-
-# selected libraries as discussed with Nick/Seb/Adrian (july2018)
-meta <- meta %>%
-    filter(InCurrentLociRun == "Yes")
 
 #creating alignment objext
 aD <- readGeneric(files = meta$File, dir = "",replicates = meta$Replicate, libnames = meta$DataCode,chrs = chrs, chrlens = chrlens,cols=cols, verbose=TRUE, gap = mygap,cl=cl)
@@ -49,19 +49,19 @@ aD <- readGeneric(files = meta$File, dir = "",replicates = meta$Replicate, libna
 # fivenum( aD@alignments$multireads )
 # [1]   1   5  35 179 994
 aD<-aD[aD@alignments$multireads < mymultireads]
-save(aD, file=file.path(datadir ,paste0("aD_chlamy_segmentation_",comment,".RData")))
+save(aD, meta, file=file.path(datadir ,paste0("aD_chlamy_segmentation_",comment,".RData")))
 #load("aDlt20_first_chlamy_segmentation_nick.RData")
 
 #Process alignment data to find potential segements
 sD<-processAD(aD,gap=mygap, cl=cl) #How big a gap should I use?
- save(sD, file=file.path(datadir ,paste0("sD_chlamy_segmentation_",comment,".RData")))
+ save(sD, meta, file=file.path(datadir ,paste0("sD_chlamy_segmentation_",comment,".RData")))
 #load(file=file.path(datadir ,paste0("sD_chlamy_segmentation_",comment,".RData")))
 
 #Generate Locus map
 hS<-heuristicSeg(sD=sD,aD=aD,getLikes=TRUE,cl=cl)
-save(hS, file=file.path(datadir, paste0("hS_chlamy_segmentation", comment, ".RData")))
+save(hS, meta, file=file.path(datadir, paste0("hS_chlamy_segmentation_", comment, ".RData")))
 
 #Generate a genome map
 segD<-classifySeg(aD=aD,sD=sD,cD=hS, getLikes=TRUE,cl=cl)
-save(segD, file=file.path(datadir ,paste0("segD_chlamy_segmentation", comment, ".RData")))
+save(segD, meta, file=file.path(datadir ,paste0("segD_chlamy_segmentation_", comment, ".RData")))
 #load("segD_first_chlamy_segmentation_nick.RData")
