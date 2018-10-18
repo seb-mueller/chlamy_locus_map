@@ -15,14 +15,34 @@ gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 #segLocation <- "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentation_with_externals.r_2015-11-12_17/"
 annoDir <- "/projects/nick_matthews/resources"
 #annoDir = "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentMap_II/Old_Annotation_Files"
+inputdata <- "segD_chlamy_segmentation_multi200_gap100.RData" #13739
+prefix <- str_replace(inputdata, "segD_chlamy_segmentation_(.*).RData", "\\1")
+# prefix  <-  "multi200_gap100"
 saveLocation <- file.path(segLocation, prefix)
 
-# code for locus summary plots
-# the locus map (not having selected loci yet, but after calculating loci likelihoods) is 'nct'
-load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
-nct<-segD
+# code for locus summary plots mostly to determine fdr cut-off
+# the locus map (not having selected loci yet, but after calculating loci likelihoods) is 'segD'
+load(file.path(segLocation, inputdata))
+# imports segD object, containing all loci plus count data, posteriours etc for each loci
+segD@coordinates
+# GRanges object with 13739 ranges and 0 metadata columns:
+#               seqnames         ranges strand
+#                  <Rle>      <IRanges>  <Rle>
+#       [1] chromosome_1 [    1,  3542]      *
+#   [13738]  scaffold_50 [11355, 11743]      *
+#   [13739]  scaffold_52 [    1,   663]      *
+#   -------
+#   seqinfo: 54 sequences from an unspecified genome; no seqlengths
+
+# check parameter used to generate gr
+attr(gr, "parameter")
+# [1] "_multi200_gap100"
+attr(gr, "git")
+# [1] "59a4cbc"
+
+# nct<-segD
                                         
-master<-read.csv("Summary_of_Data.csv")
+master <- read.csv(file.path(gitdir, "Summary_of_Data.csv"))
 #To select apparent 'WT' - i.e. non-mutants
 #wt<-subset(master,master[,"Ecotype"] =="wt")
 #wtReps<-unique(wt[,"Replicate"])
@@ -30,13 +50,14 @@ master<-read.csv("Summary_of_Data.csv")
 #To select very specific control WTs
 wt<-subset(master,master[,"Controls"] =="wt")
 wtReps<-unique(wt[,"Replicate"]) #Currently 10 06/07/18
+#  [1] 31 32 39 40 41 55 58 59 62 63 # 15/8/18
 
 nfdrnum <- NULL
 
 # check how many loci get selected at various FDR levels
 for(ii in (1:20 / 4)) {
   fdr <- 10^-ii
-  loci <- selectLoci(nct, FDR = fdr, perReplicate = TRUE) #
+  loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE) #
   nfdrnum <- cbind(nfdrnum, c(fdr, nrow(loci)))
 }
 
@@ -49,9 +70,9 @@ pdf("fdr_hists.pdf", width = 10, paper = "a4r")
 par(mfcol = c(3,5))
 for(ii in 1:5) {
   fdr <- 10^-ii
-  loci <- selectLoci(nct, FDR = fdr, perReplicate = TRUE)
+  loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE)
   hist(rowSums(exp(loci@locLikelihoods[,wtReps])), breaks = 0:length(wtReps), main = paste("FDR =", fdr), xlab = "Expectation")
-  hist(rowSums(exp(loci@locLikelihoods)), breaks = 0:nlevels(nct@replicates), main = paste("FDR =", fdr), xlab = "Expectation")
+  hist(rowSums(exp(loci@locLikelihoods)), breaks = 0:nlevels(segD@replicates), main = paste("FDR =", fdr), xlab = "Expectation")
   # also have a look at locus lenght distribution while we're at it.
   plot(density(log10(width(loci@coordinates))), main = "", xlab = "log width")
 }
@@ -62,7 +83,7 @@ dev.off()
 #########nloci <- loci[,-1]; nloci@locLikelihoods <- loci@locLikelihoods[,-1]
 
 fdr <- 0.1
-loci <- selectLoci(nct, FDR = fdr, perReplicate = TRUE)
+loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE)
 
 # get an idea of the sequencing depth added by each replicate groups
 sumLibsizes <- sapply(levels(loci@replicates), function(rep) sum(libsizes(loci)[loci@replicates == rep]))
@@ -73,10 +94,10 @@ ordLoc <- order(sumLibsizes, decreasing = FALSE)
 
 # number of additional loci added by each library (with increasing sequencing depth)
 cumloc <- sapply(1:length(ordLoc), function(ii) {
-	message(ii)
-	selLoc <- nct[,nct@replicates %in% ordLoc[1:ii]]
-	selLoc@locLikelihoods <- as.matrix(selLoc@locLikelihoods[,ordLoc[1:ii],drop = FALSE])
-	z <- try(selectLoci(selLoc, FDR = 0.1 , perReplicate = TRUE))
+  message(ii)
+  selLoc <- segD[,segD@replicates %in% ordLoc[1:ii]]
+  selLoc@locLikelihoods <- as.matrix(selLoc@locLikelihoods[,ordLoc[1:ii],drop = FALSE])
+  z <- try(selectLoci(selLoc, FDR = 0.1 , perReplicate = TRUE))
     if(class(z) == "try-error") return(0) else return(nrow(z))
 })
 

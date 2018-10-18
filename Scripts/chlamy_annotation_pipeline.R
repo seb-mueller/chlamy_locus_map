@@ -1,4 +1,6 @@
-#Script for running annotation functions
+#Script for running annotation functions as well as defining sRNA loci for chlamy.
+# The appropriate thresholds (e.g. FDR) are determined in:
+# Segmentation_Analysis.R
 #Adapted by Nick Matthews from code written by Tom Hardcastle and Sebastian Muller
 #Date: 09/02/16
 ##### Load necesary libraries
@@ -50,7 +52,7 @@ load(file.path(segLocation, inputdata))
 # perReplicate: If TRUE, selection of loci is done on a replicate by replicate basis. If FALSE, selection will be done on the likelihood that the locus represents a true locus in at least one replicate group.
 
 # which setting are we using?
-loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = FALSE) # 8320
+loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = TRUE) # 4915
 # loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = TRUE) # 4915 (plus warning)
 
 ## creating/exporting coordinates object
