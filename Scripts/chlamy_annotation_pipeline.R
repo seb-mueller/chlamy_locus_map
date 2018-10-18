@@ -14,6 +14,8 @@ library(RColorBrewer)
 # library(mclust)
 library(baySeq)
 library(MKmisc)
+library(readr)
+library(dplyr)
 # library(simpleboot)
 
 ###### setting variables
@@ -23,12 +25,19 @@ baseDir <- "/projects/nick_matthews"
 # Specify location of segmentation
 segLocation <- file.path(baseDir, "segmentation_2018")
 annoDir     <- file.path(baseDir, "resources")
+annoFile <- "chlamy_all_annotations.Rdata"
 #set working directory to github repository on cluster
 gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
+meta <- read_csv(file.path(gitdir, "Summary_of_Data.csv")) %>%
+    filter(InCurrentLociRun == "Yes")
+#TODO we need to check definition of WTs
+metawt <- meta$Controls %in% c("wt")
+
 source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
 # list.files(segLocation, pattern = "segD.*")
 inputdata <- "segD_chlamy_segmentation_multi200_gap100.RData" #13739
+aDfile <- "aD_chlamy_segmentation__multi200_gap100.RData"
 # inputdata <- "segD_chlamy_segmentation_smallset_200.RData" # 2loci
 # inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian100.RData" #8977
 # inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian200.RData" #8158
@@ -51,14 +60,16 @@ load(file.path(segLocation, inputdata))
 # Select loci based on some fdr
 # perReplicate: If TRUE, selection of loci is done on a replicate by replicate basis. If FALSE, selection will be done on the likelihood that the locus represents a true locus in at least one replicate group.
 
-# which setting are we using?
+# which setting are we using? see issue #9
 loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = TRUE) # 4915
+attr(loci, "parameter") <- prefix
+attr(loci, "git") <- gitfingerprint
 # loci <- selectLoci(cD = segD, FDR = fdr, perReplicate = TRUE) # 4915 (plus warning)
 
 ## creating/exporting coordinates object
 gr <- loci@coordinates
 
-# safe attributes in object  
+# safe attributes in object
 attr(gr, "parameter") <- prefix
 attr(gr, "git") <- gitfingerprint
 # name the loci 'CR' - chlamydomonas reinhardtii, 'SL' - srna locus
@@ -79,38 +90,41 @@ write.csv(as.data.frame(gr),file=file.path(baseDir, "phasing/loci_for_phasing.cs
 
 transposonProcess(annoDir)
 #Compute and compiles annotations
-compileAnnotations(annoDir)
+compileAnnotations(annoDir, annoFile = annoFile)
 #####the next set of functions take the annotated locus object 'gr' and add some more annotation data#####
 #The functions are found 'chlamy_source_code.R'
 
 # annotate by size class
 gr <- sizeClass(gr, intervals = c(0,30,75,150,1000,Inf))
 table(gr$sizeclass)
-# 
-#      (0,30]     (30,75]    (75,150] (150,1e+03] (1e+03,Inf] 
-#          51         130         335        4480        3324 
+#
+#      (0,30]     (30,75]    (75,150] (150,1e+03] (1e+03,Inf]
+#          16          93         230        3252        1324
 
 # annotate with overlapping features
-gr <- expressionClass(gr, loci)
-gr <- featureAnn(gr, annoDir)
+gr <- expressionClass(locAnn = gr, loci = loci, wt = metawt)
+gr <- featureAnn(locAnn = gr, annoDir = annoDir, annoFile = annoFile)
 
 # annotate with counting biases; i.e, is there a higher than average ratio of 21s to 20s, or a higher number of reads starting with As than usual
-gr <- countingBiases(gr,cl,segLocation)
+gr <- countingBiases(locAnn = gr, cl = cl,
+                     segLocation = segLocation,
+                     wt = metawt,
+                     aDfile = aDfile)
 stopCluster(cl)
 
 #Old methylation function - may still be usefull, picks up a lot more methylation
-gr <-methylation1(gr,annoDir)
+# gr <-methylation1(gr,annoDir)
 
 #New methylation functions
 # gr <- methylation2(gr,annoDir)
-gr <- methylation(gr,annoDir)
+gr <- methylation(gr, annoDir)
 #gr <- methylationDiff(gr,annoDir) #Almost no results - very small datasets
 #gr <- methylationDiff(grannoDir) #Almost no results - very small datasets
 
 #Extra Current annotations
-gr <- strainSpec(gr, loci)
-gr <- lifeCycle(gr, loci)
-gr <- mutantSpec(gr, loci)
+gr <- strainSpec(gr, loci, meta = meta, gitdir = gitdir)
+gr <- lifeCycle(gr, loci, meta = meta, gitdir = gitdir)
+gr <- mutantSpec(gr, loci, meta = meta, gitdir = gitdir)
 # gr <- phaseMatch(gr)
 
 #Other functions which were done for arabidopsis

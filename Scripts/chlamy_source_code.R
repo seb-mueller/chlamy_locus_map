@@ -8,7 +8,7 @@
 #Compute annotations loads in annotation files from a provided directory and after processing them outputs and saves them as a Rdata file for further use
 #path to annotation files has a default but can also be user specified
 #TODO Find data for tRNAs
-compileAnnotations <- function(annoDir = "/projects/nick_matthews/resources") {
+compileAnnotations <- function(annoDir = "resources", annoFile) {
   #annoDir = "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentMap_II/Old_Annotation_Files"
   #Specify what libraries are required
   require(GenomicRanges)
@@ -18,31 +18,31 @@ compileAnnotations <- function(annoDir = "/projects/nick_matthews/resources") {
   load(file.path(annoDir,"transposon_annotations.Rdata"))
   #Load in irs and trs data
   irs <- import.gff3(file.path(annoDir,"irf_output_Creinhardtii_236.gff"))
-	irs$type<-irs$source
-	trs <- import.gff3(file.path(annoDir,"trf_output_Creinhardtii_236.gff"))
-	trs$type<-trs$source
+  irs$type<-irs$source
+  trs <- import.gff3(file.path(annoDir,"trf_output_Creinhardtii_236.gff"))
+  trs$type<-trs$source
 
   #Load in miRNA data
   #TODO check miRNA file for correspondance to Adrian's paper list
   miRNA <- import.gff3(file.path(annoDir,"Vallietal2016_miRNAs.gff3"))
-	miRNA$type <- "miRNA"
+  miRNA$type <- "miRNA"
   #Load in rRNA data
-	rRNA <- import.gff3(file.path(annoDir,"Creinhardtii_rRNA.gff3"))
-	#Load in MSAT data
-	MSAT <- import.gff3(file.path(annoDir,"Creinhardtii_MSAT.gff3"))
+  rRNA <- import.gff3(file.path(annoDir,"Creinhardtii_rRNA.gff3"))
+  #Load in MSAT data
+  MSAT <- import.gff3(file.path(annoDir,"Creinhardtii_MSAT.gff3"))
 
-	#Load in annotation data from v5.5 chlamy annotation
-	anno <- import.gff3(file.path(annoDir,"Creinhardtii_281_v5.5.gene_exons.gff3"))
-	#Extract from genes data the relevant subsets
-  mRNA <- anno[anno$type=="mRNA",]
-  genes<-anno[anno$type=="gene",]
-	exons<-anno[anno$type=="exon",]
-	CDS<-anno[anno$type=="CDS",]
-	threeprimeUTR<-anno[anno$type=="three_prime_UTR",]
-	fiveprimeUTR<-anno[anno$type=="five_prime_UTR",]
+  #Load in annotation data from v5.5 chlamy annotation
+  anno <- import.gff3(file.path(annoDir,"Creinhardtii_281_v5.5.gene_exons.gff3"))
+  #Extract from genes data the relevant subsets
+  mRNA          <- anno[anno$type=="mRNA",]
+  genes         <- anno[anno$type=="gene",]
+  exons         <- anno[anno$type=="exon",]
+  CDS           <- anno[anno$type=="CDS",]
+  threeprimeUTR <- anno[anno$type=="three_prime_UTR",]
+  fiveprimeUTR  <- anno[anno$type=="five_prime_UTR",]
 
-	#Calculate promoter region the 500bp flanking region around gene
-	#TODO check this, surely the promoter region is the 500bp upstream... use gene or mRNA?
+  #Calculate promoter region the 500bp flanking region around gene
+  #TODO check this, surely the promoter region is the 500bp upstream... use gene or mRNA?
   promoter <- promoters(anno[anno$type=="mRNA"],upstream=500,downstream=0)
   promoter$type <- droplevels(promoter$type)
   levels(promoter$type) <- "promoter"
@@ -52,17 +52,17 @@ compileAnnotations <- function(annoDir = "/projects/nick_matthews/resources") {
   levels(introns$type) <- "intron"
 
   #Puts all annotations together just incase it's useful
-	# everything<-c(irs[,1:2],trs[,1:2],miRNA[,1:2],rRNA[,1:2],MSAT[,1:2],mRNA[,1:2],genes[,1:2],
-	#               exons[,1:2],CDS[,1:2],threeprimeUTR[,1:2],fiveprimeUTR[,1:2],promoter[,1:2],
-	#               transposons[,1:2],introns[,1:2])
+  # everything<-c(irs[,1:2],trs[,1:2],miRNA[,1:2],rRNA[,1:2],MSAT[,1:2],mRNA[,1:2],genes[,1:2],
+  #               exons[,1:2],CDS[,1:2],threeprimeUTR[,1:2],fiveprimeUTR[,1:2],promoter[,1:2],
+  #               transposons[,1:2],introns[,1:2])
 
-	#Save all as one big RData file
-	save(genes,anno,
-	     transposons, repetativeSeq, TE_Class_DNA, TE_Class_RET,
-	     TE_Undefined,TE_L1,TE_Gypsy,TE_Copia,TE_hAT,TE_RTE,TE_Novosib,TE_DualenRandI,
-	     TE_P,TE_Mariner,TE_REM1,TE_EnSpm,TE_DIRS,TE_TOC2,TE_TOC1,TE_Gulliver,TE_TCR1,TE_Harbinger,
-	     rRNA,miRNA,MSAT,mRNA,irs,trs,promoter,threeprimeUTR,fiveprimeUTR,exons,CDS,
-	     introns,file=file.path(annoDir,"chlamy_all_annotations.Rdata"))
+  #Save all as one big RData file
+  save(genes,anno,
+       transposons, repetativeSeq, TE_Class_DNA, TE_Class_RET,
+       TE_Undefined,TE_L1,TE_Gypsy,TE_Copia,TE_hAT,TE_RTE,TE_Novosib,TE_DualenRandI,
+       TE_P,TE_Mariner,TE_REM1,TE_EnSpm,TE_DIRS,TE_TOC2,TE_TOC1,TE_Gulliver,TE_TCR1,TE_Harbinger,
+       rRNA,miRNA,MSAT,mRNA,irs,trs,promoter,threeprimeUTR,fiveprimeUTR,exons,CDS,
+       introns,file=file.path(annoDir, annoFile))
 }
 
 #Function which shortens the standard annotation process
@@ -97,7 +97,7 @@ computeOverlaps <- function(locAnn,annotations,assignNames = FALSE,  namesColumn
 }
 
 #Function calculates introns from the gene annotation v5.5 from p
-intronCalculate <- function(annoDir = "/projects/nick_matthews/resources") {
+intronCalculate <- function(annoDir = "resources") {
   #Load in necessary libraries
   require(tidyverse)
   require(GenomicRanges)
@@ -114,7 +114,7 @@ intronCalculate <- function(annoDir = "/projects/nick_matthews/resources") {
   #####Extract exonic sequences#####
   genes <- allGenes[allGenes$type=="gene",]
   exons <- allGenes[allGenes$type=="exon",]
-  mRNA <- allGenes[allGenes$type=="mRNA",]
+  mRNA  <- allGenes[allGenes$type=="mRNA",]
 
   #####Derive intronic sequences#####
   #remove mRNA which don't have at least two exons overlapping them - therefore wouldn't have an intron by definition
@@ -151,7 +151,7 @@ intronCalculate <- function(annoDir = "/projects/nick_matthews/resources") {
 
 #Function classified transposon dataset into standardised classification scheme
 #Need to specify whether to keep unknowns
-transposonProcess <- function(annoDir = "/projects/nick_matthews/resources",keepUnknowns=FALSE) {
+transposonProcess <- function(annoDir = "resources",keepUnknowns=FALSE) {
   #Require some libraries
   require(rtracklayer)
   require(GenomicRanges)
@@ -272,7 +272,7 @@ classCI <- function(x1, x2, probs, divisions, comma, plot = TRUE,plotname) {
 
 #####Scripts for generating summary tables#####
 #This function generates loci identified per chromosome and loci density table
-chromosomeLociTable <- function(mapName, mapLocation = "/projects/nick_matthews/segmentation2018") {
+chromosomeLociTable <- function(mapName, mapLocation = "segmentation2018") {
   #libraries requires
   require(segmentSeq)
   require(rtracklayer)
@@ -404,19 +404,11 @@ sizeClass <- function(locAnn, intervals = c(0,30,75,150,1000,Inf)) {
 }
 
 #Expression class calculates whether it occurs accross all WTs or not
-expressionClass <- function(locAnn,loci) {
+expressionClass <- function(locAnn, loci, wt) {
   #Require packages
   require(GenomicRanges)
   require(rtracklayer)
 
-  #Extracts wild type samples from CSV and computes commonality of expression
-  #TODO this needs to link to latest csv
-  #Read in summary data file for reference
-  samples <- read.csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv",header=TRUE)
-  #Filter out rows of any samples left out
-  samples <- samples[samples$InCurrentLociRun == "Yes",]
-  #TODO we need to check definition of WTs
-  wt <- samples$Controls %in% c("wt")
   #expression only for wt data
   wtrepgroups <- as.integer(unique(loci@replicates[wt]))
   #TODO check likelihood threshold is OK
@@ -431,18 +423,11 @@ expressionClass <- function(locAnn,loci) {
 #TODO generate plots and choose appropriate probs values for strand biases
 #TODO edit firs base function so it only identifies first base
 #TODO check repetativeness calculation - I seem to remember this having some problems in the past
-countingBiases <- function(locAnn, cl, segLocation = "/projects/nick_matthews/segmentation_2018") {
+countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2018", aDfile,wt) {
 
   #Firstly load in raw alignment data
-  load(file.path(segLocation,"aD_chlamy_segmentation__multi200_gap100.RData")) #aD #alignmentData
+  load(file.path(segLocation, aDfile)) #aD #alignmentData
   colnames(values(aD@alignments))[2] <- "multireads"
-
-  #Read in summary data file for reference
-  samples <- read.csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv",header=TRUE)
-  #Filter out rows of any samples left out
-  samples <- samples[samples$InCurrentLociRun == "Yes",]
-  #extract any samples which are considered genuine controls
-  wt <- samples$Controls %in% c("wt")
 
   #Extract raw widths from the aD object for key wt libraries
   aDwidths <- width(aD@alignments)
@@ -573,22 +558,17 @@ countingBiases <- function(locAnn, cl, segLocation = "/projects/nick_matthews/se
 
 ##Compares loci from different life cycles
 #TODO check life-cycle information is valid, possibly drop this one
-lifeCycle <- function(locAnn, loci, FDR=0.05) {
-  source("Scripts/selectLoci.R")
+lifeCycle <- function(locAnn, loci, FDR=0.05, meta, gitdir) {
+  source(file.path(gitdir, "Scripts/selectLoci.R"))
   selLoc <- selectLoci(loci, FDR = FDR, perReplicate = TRUE, returnBool = TRUE)
-  #Read in summary data file for reference
-  samples <- read.csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv",header=TRUE)
-  #Filter out rows of any samples left out
-  samples <- samples[samples$InCurrentLociRun == "Yes",]
-  #wt <- samples$Ecotype %in% c("wt")
   #Control for genotype - probably not necessary?
   #CC1883 <- samples$Genotype %in% c("CC1883")
 
 
   #locAnn$vegetative <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Vegetative" & CC1883)]))]) > 0
-  locAnn$vegetative <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Vegetative")]))]) > 0
+  locAnn$vegetative <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$LifeCycle == "Vegetative")]))]) > 0
   #locAnn$zygote <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Zygote" & CC1883)]))]) > 0
-  locAnn$zygote <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$LifeCycle == "Zygote")]))]) > 0
+  locAnn$zygote <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$LifeCycle == "Zygote")]))]) > 0
 
 
   locAnn$vegetativespecific <- locAnn$vegetative & !locAnn$zygote
@@ -599,21 +579,16 @@ lifeCycle <- function(locAnn, loci, FDR=0.05) {
 }
 
 ##Compares loci from different strains
-strainSpec <- function(locAnn, loci, FDR=0.05) {
-  source("Scripts/selectLoci.R")
+strainSpec <- function(locAnn, loci, FDR=0.05, meta, gitdir) {
+  source(file.path(gitdir, "Scripts/selectLoci.R"))
   selLoc <- selectLoci(loci, FDR = FDR, perReplicate = TRUE, returnBool = TRUE)
   #Read in summary data file for reference
-  samples <- read.csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv",header=TRUE)
-  #Filter out rows of any samples left out
-  samples <- samples[samples$InCurrentLociRun == "Yes",]
-
-  #wt <- samples$Controls %in% c("wt")
 
   #Work out which strains the loci are present in
-  locAnn$CC1883 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "CC1883")]))]) > 0
-  locAnn$CC125 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "CC125")])),drop=FALSE]) > 0
-  locAnn$CC4350 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "CC4350")])),drop=FALSE]) > 0
-  locAnn$J <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$Genotype == "J")])),drop=FALSE]) > 0
+  locAnn$CC1883 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$Genotype == "CC1883")]))]) > 0
+  locAnn$CC125 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$Genotype == "CC125")])),drop=FALSE]) > 0
+  locAnn$CC4350 <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$Genotype == "CC4350")])),drop=FALSE]) > 0
+  locAnn$J <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$Genotype == "J")])),drop=FALSE]) > 0
 
   #Assign any that are specific
   locAnn$CC1883specific <- locAnn$CC1883 & !(locAnn$CC125 | locAnn$J | locAnn$CC4350)
@@ -624,19 +599,15 @@ strainSpec <- function(locAnn, loci, FDR=0.05) {
 }
 
 ##Compares loci from mutant experiments - NOTE: selects only the wts from Adrian's mutant experiments for comparison!
-mutantSpec <- function(locAnn, loci,FDR=0.05) {
+mutantSpec <- function(locAnn, loci,FDR=0.05, meta, gitdir) {
   #Uses development version of segmentseq code
-  source("Scripts/selectLoci.R")
+  source(file.path(gitdir, "Scripts/selectLoci.R"))
   selLoc <- selectLoci(loci, FDR = FDR, perReplicate = TRUE, returnBool = TRUE)
-  #Read in summary data file for reference
-  samples <- read.csv("/projects/nick_matthews/chlamy_locus_map_github/Summary_of_Data.csv",header=TRUE)
-  #Filter out rows of any samples left out
-  samples <- samples[samples$InCurrentLociRun == "Yes",]
 
-  locAnn$wtAdrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$AdrianExp == "wt")]))]) > 0
-  locAnn$dcl3Adrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$AdrianExp == "dcl3")]))]) > 0
-  locAnn$ago3Adrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(samples$AdrianExp == "ago3")]))]) > 0
-  locAnn$mutantAdrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(!samples$AdrianExp == "wt" & !samples$AdrianExp == "FALSE")]))]) > 0
+  locAnn$wtAdrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$AdrianExp == "wt")]))]) > 0
+  locAnn$dcl3Adrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$AdrianExp == "dcl3")]))]) > 0
+  locAnn$ago3Adrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(meta$AdrianExp == "ago3")]))]) > 0
+  locAnn$mutantAdrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(!meta$AdrianExp == "wt" & !meta$AdrianExp == "FALSE")]))]) > 0
   #locAnn$notdcl3Adrian <- rowSums(selLoc[,as.integer(unique(loci@replicates[which(!samples$AdrianExp == "FALSE" & !samples$AdrianExp == "dcl3")]))]) > 0
 
   #Specific to wild type from Adrian's experiments
@@ -656,7 +627,7 @@ mutantSpec <- function(locAnn, loci,FDR=0.05) {
 
 #phaseMatch takes outputs from phasing code and assigns as moderate or high phasing
 #TODO rerun phasing for new locus map, check thresholds
-phaseMatch <- function(locAnn,phasingDir = "/projects/nick_matthews/phasing") {
+phaseMatch <- function(locAnn,phasingDir = "phasing") {
   ##TASI analyse
   beds <- as.data.frame(locAnn)[,1:3]
   #beds[,1] <- paste("Chr", beds[,1], sep = "")
@@ -689,13 +660,13 @@ phaseMatch <- function(locAnn,phasingDir = "/projects/nick_matthews/phasing") {
 
 #This function loads in the annotation data and computes overlaps with given locAnn object
 #There is a default location for the annotation files but can also be user specified
-featureAnn <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
+featureAnn <- function(locAnn,annoDir = "resources", annoFile = "chlamy_all_annotations.Rdata") {
   #Require packages
   require(rtracklayer)
   require(GenomicRanges)
 
   #load in annotations
-  load(file.path(annoDir,"chlamy_all_annotations.Rdata"))
+  load(file.path(annoDir, annoFile))
 
   #Compute all simple annotations
   #First create list of annotations to apply
@@ -737,7 +708,7 @@ featureAnn <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
 
 #Methylation overlaps using new methylation loci from Tom
 #TODO Integrate any additional analysis carried out by Seb that we may have
-methylation <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
+methylation <- function(locAnn,annoDir = "resources") {
   #Require certain packages
   require(GenomicRanges)
   require(rtracklayer)
@@ -746,19 +717,19 @@ methylation <- function(locAnn,annoDir = "/projects/nick_matthews/resources") {
   methCHH=import.gff3(file.path(annoDir,"meth_data/chlamy_CHHmeth.gff3"))
   methCHG=import.gff3(file.path(annoDir,"meth_data/chlamy_CHGmeth.gff3"))
   #Ensure sequence levels are matched to the reference
-	seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(locAnn)
-	#Create additional object that merged the three methylation files
-	methAll <- c(methCG,methCHH,methCHG)
-	#Make a list of methylation files for overlap computation
-	methylation = list(methCG = methCG, methCHH = methCHH, methCHG = methCHG, methAll = methAll)
-	#Compute overlaps
-	locAnn <- computeOverlaps(locAnn,methylation)
+  seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(locAnn)
+  #Create additional object that merged the three methylation files
+  methAll <- c(methCG,methCHH,methCHG)
+  #Make a list of methylation files for overlap computation
+  methylation = list(methCG = methCG, methCHH = methCHH, methCHG = methCHG, methAll = methAll)
+  #Compute overlaps
+  locAnn <- computeOverlaps(locAnn,methylation)
 
   locAnn
 }
 
 #Meth overlaps using differential loci from Tom - too small datasets
-methylationDiff <- function(locAnn, annoDir = "/projects/nick_matthews/resources") {
+methylationDiff <- function(locAnn, annoDir = "resources") {
   #Require certain packages
   require(GenomicRanges)
   require(rtracklayer)
@@ -767,27 +738,27 @@ methylationDiff <- function(locAnn, annoDir = "/projects/nick_matthews/resources
   methCHH=import.gff3(file.path(annoDir,"meth_data/Andy_differentialMeth_CHH.gff3"))
   methCHG=import.gff3(file.path(annoDir,"meth_data/Andy_differentialMeth_CHG.gff3"))
   #Ensure sequence levels are matched to the reference
-	seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(locAnn)
+  seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(locAnn)
 
-	#Extract differential methylation calls
-	#for CG meth
-	methCG_wt <- methCG[methCG$ordering == "2>1"]
-	methCG_dcl3 <- methCG[methCG$ordering == "1>2"]
-	#for CHH meth
-	methCHH_wt <- methCHH[methCHH$ordering == "2>1"]
-	methCHH_dcl3 <- methCHH[methCHH$ordering == "1>2"]
-	#for CHG meth
-	methCHG_wt <- methCHG[methCHG$ordering == "2>1"]
-	methCHG_dcl3 <- methCHG[methCHG$ordering == "1>2"]
-	#For all meth
-	methAll_wt <- c(methCG_wt, methCHH_wt, methCHG_wt)
-	methAll_dcl3 <- c(methCG_dcl3, methCHH_dcl3, methCHG_dcl3)
+  #Extract differential methylation calls
+  #for CG meth
+  methCG_wt <- methCG[methCG$ordering == "2>1"]
+  methCG_dcl3 <- methCG[methCG$ordering == "1>2"]
+  #for CHH meth
+  methCHH_wt <- methCHH[methCHH$ordering == "2>1"]
+  methCHH_dcl3 <- methCHH[methCHH$ordering == "1>2"]
+  #for CHG meth
+  methCHG_wt <- methCHG[methCHG$ordering == "2>1"]
+  methCHG_dcl3 <- methCHG[methCHG$ordering == "1>2"]
+  #For all meth
+  methAll_wt <- c(methCG_wt, methCHH_wt, methCHG_wt)
+  methAll_dcl3 <- c(methCG_dcl3, methCHH_dcl3, methCHG_dcl3)
 
-	#Compile methylation files
-	methylation = list(methCG_wt = methCG_wt, methCHH_wt = methCHH_wt, methCHG_wt = methCHG_wt, methAll_wt = methAll_wt,
-	                   methCG_dcl3 = methCG_dcl3, methCHH_dcl3 = methCHH_dcl3, methCHG_dcl3 = methCHG_dcl3, methAll_dcl3 = methAll_dcl3)
+  #Compile methylation files
+  methylation = list(methCG_wt = methCG_wt, methCHH_wt = methCHH_wt, methCHG_wt = methCHG_wt, methAll_wt = methAll_wt,
+                     methCG_dcl3 = methCG_dcl3, methCHH_dcl3 = methCHH_dcl3, methCHG_dcl3 = methCHG_dcl3, methAll_dcl3 = methAll_dcl3)
   #Compute overlaps
-	locAnn <- computeOverlaps(locAnn,methylation)
+  locAnn <- computeOverlaps(locAnn,methylation)
 
-	locAnn
+  return(locAnn)
 }

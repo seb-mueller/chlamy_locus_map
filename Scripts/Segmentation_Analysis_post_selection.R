@@ -2,7 +2,7 @@
 # date: 2018-10-18
 # chlamy small RNA loci R code
 # This code is based on a finished loci definition as obtained from:
-# Segmentation_Analysis.R
+# chlamy_annotation_pipeline.R and Segmentation_Analysis.R
 
 
 library(segmentSeq)
