@@ -49,6 +49,10 @@ chrs <- c("chromosome_1","chromosome_2","chromosome_3","chromosome_4","chromosom
 cols = c(chr = 1, tag = 10, start = 4, end = 5, count = 6, strand = 7)
 
 #creating alignment objext
+# file.exists(file.path(baseDir, "sequencing_data", meta$File))
+
+ # meta$File[!file.exists(file.path(baseDir, "sequencing_data", meta$File))]
+
 aD <- readGeneric(files = meta$File,
                   dir = file.path(baseDir, "sequencing_data"),
                   replicates = meta$Replicate,
@@ -68,21 +72,21 @@ attr(aD, "sessionInfo") <- sessionInfo()
 # fivenum( aD@alignments$multireads )
 # [1]   1   5  35 179 994
 aD<-aD[aD@alignments$multireads < mymultireads]
-save(aD, meta, file=file.path(datadir ,paste0("aD_chlamy_segmentation_",mycomment,".RData")))
+save(aD, meta, file=file.path(segLocation ,paste0("aD_chlamy_segmentation_",mycomment,".RData")))
 #load("aDlt20_first_chlamy_segmentation_nick.RData")
 
 #Process alignment data to find potential segements
 sD<-processAD(aD,gap=mygap, cl=cl) #How big a gap should I use?
- save(sD, meta, file=file.path(datadir ,paste0("sD_chlamy_segmentation_",mycomment,".RData")))
-#load(file=file.path(datadir ,paste0("sD_chlamy_segmentation_",mycomment,".RData")))
+ save(sD, meta, file=file.path(segLocation ,paste0("sD_chlamy_segmentation_",mycomment,".RData")))
+#load(file=file.path(segLocation ,paste0("sD_chlamy_segmentation_",mycomment,".RData")))
 
 #Generate Locus map
 hS<-heuristicSeg(sD=sD,aD=aD,getLikes=TRUE,cl=cl)
-save(hS, meta, file=file.path(datadir, paste0("hS_chlamy_segmentation_", mycomment, ".RData")))
+save(hS, meta, file=file.path(segLocation, paste0("hS_chlamy_segmentation_", mycomment, ".RData")))
 
 #Generate a genome map
 segD<-classifySeg(aD=aD,sD=sD,cD=hS, getLikes=TRUE,cl=cl)
 attr(segD, "parameter")   <- mycomment
 attr(segD, "git")         <- gitfingerprint
 attr(segD, "sessionInfo") <- sessionInfo()
-save(segD, meta, file=file.path(datadir ,paste0("segD_chlamy_segmentation_", mycomment, ".RData")))
+save(segD, meta, file=file.path(segLocation ,paste0("segD_chlamy_segmentation_", mycomment, ".RData")))
