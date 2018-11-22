@@ -1,0 +1,394 @@
+PhaseTank is a computational tool for genome-wide identification of phasiRNA involved regulatory cascades.
+
+http://phasetank.sourceforge.net/
+
+Cite: **.
+
+----------------------------------------------------------------------------------------------
+License
+
+PhaseTank_v1.0.pl
+
+Copyright (c) 2014 Qingli Guo
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <http://www.gnu.org/licenses/>.
+
+AUTHOR:
+
+    Qingli Guo, Northwest A&F University, guoql.karen@gmail.com
+	
+	version 1.0; July 30 2014
+
+-----------------------------------------------------------------------------------------------
+
+PhaseTank can report detailed phased information of the predicted phasiRNA producing loci, and also the 
+
+phasiRNAs regulatory cascades 'miRNA/phasiRNA -> PHAS gene -> phasiRNAs -> target genes'. 
+
+To use PhaseTank, you need to install the related software (click 'Related Software' on the right of our website), and  in your PATH.
+	
+	1: perl (version 5.x)
+	2: bowtie (version 0.12.x or 1.x)(Langmead, et al., 2009)
+	
+	The followings are required by cleaveland4 (Addo-Quaye, et al., 2009):
+	3: Math::CDF (from CPAN)
+	4: RNAplex (from Vienna RNA package)(Tafer and Hofacker, 2008)
+	6: samtools(Li, et al., 2009)
+	5: R
+
+Besides, three perl scripts are also needed to add into your PATH:
+	1: PhaseTank_v1.pl
+	2: CleaveLand4_modified.pl
+	3: GSTAr.pl
+
+The PhaseTank package can be downloaded at 'Version 1.0', which includes a compress file named 'TUTORIAL_PhaseTank_V1.0.zip'. It includes:
+	
+	1: 1)	genome.fa (genome sequence, a multiline FASTA file; or cDNA sequence, a FASTA format file). It should be formatted as the list example.
+	Argument : '--genome <string>'
+
+example:	
+>chr1
+ATGTCCCTTCTGTTTCAACAGACAGTTCCTTTATCACACCTTCACAGGTCCCTCGATCCT
+CCACTCTGCTTCCGCACTCACATACTGCTAATTCTTCTCCTGCTATCTCGACATCTTCCC
+GGTTTCACAGGCTCTGATTGCGAATCTGCAGATCCTTCAATTGTCTCTGCGATTGCTCCT
+GGAACTGCTACCACATCAGAAAGAGACTGTCCTGTGCGTACGGCAGGCTCAGATCCTGTT
+CCTATTGGCGACAGCGGTACCTTTTTTGATGTTGGGACAGCTGCTCCTGAGCTACTTTCA
+CCTAATAGACATCATATGATCACTCGGGCAAAGGATGGTATTCGCAAGCCTAATCCTCGT
+TACAACCTGTTTACACAAAAATACACTCCCTCTGAACCAAAAACCATTACGTCTGCCTCC
+CAGGATGGAGACAAGCTATGCAAGAAGAGATGTCGGCATTAA
+
+	2: reads libraries 
+	Argument : '--lib <file_1>,<file_2>,<file_n>' (comma-separated, NO SPACE between file_names is allowed )
+	The small RNA-seq data, a multiline FASTA file. It should be formatted like:
+
+example:
+>t1_x4350713
+TTTGGATTGAAGGGAGCTCTA
+	
+	(Note, 't1' is the id of the read, and can be any distinguished id name)
+	
+	The reason why we use mixed libraries is that the expression of TAS gene is dependent on the biological state of the tissue or cell.
+	Thus, the merged data would provide us more information about this special class of RNA producing genes in a particular organism.
+	While the user can also use one of their interested libraries to analyse the differential expression of PHAS genes in various genetic backgrounds.
+		
+	3: miRNAs (the microRNAs, a multiline FASTA file)
+	Option : '--mi <string>'
+
+example:	
+>ath-miR156a
+UGACAGAAGAGAGUGAGCAC
+	
+	It can be used to search the miRNA-triggered biogenesis for phasiRNAs.
+	
+	4: degradome data (a multiline FASTA file)
+	Option : '--degradome <string>'
+
+example:	
+>read1
+TTTTTTTTTTTTTTTTTTTT
+>read2
+TTTTTTTTTTTTTTTTTTTTT
+>read3
+TTTTTTTTTTTTTTTTTTTTT
+
+	It can be used to validate the cleavage site for predicted targets by CleaveLand4.
+	
+	5: ncRNA file (the FASTA format seq of annotated other ncRNAs, a multiline FASTA file)
+	Option : '--filter <string>'
+	
+example:
+
+>ATMG01380.1
+AAACCGGGCACTACGGTGAGACGTGAAAACACCCGATCCCATTCCGACCTCGATATGTGG
+AATCGTCTTGCGCCATATGTACTGAGATTGTTCGGGAGACATGGTCCAAGCCCGGTGA
+
+	6: target file (the FASTA format seq of candidate target for phasiRNA targets prediction)
+	option: '--target <string>'
+	
+example:
+>ATMG00010.1
+ATGTCCCTTCTGTTTCAACAGACAGTTCCTTTATCACACCTTCACAGGTCCCTCGATCCT
+CCACTCTGCTTCCGCACTCACATACTGCTAATTCTTCTCCTGCTATCTCGACATCTTCCC
+GGTTTCACAGGCTCTGATTGCGAATCTGCAGATCCTTCAATTGTCTCTGCGATTGCTCCT
+GGAACTGCTACCACATCAGAAAGAGACTGTCCTGTGCGTACGGCAGGCTCAGATCCTGTT
+CCTATTGGCGACAGCGGTACCTTTTTTGATGTTGGGACAGCTGCTCCTGAGCTACTTTCA
+CCTAATAGACATCATATGATCACTCGGGCAAAGGATGGTATTCGCAAGCCTAATCCTCGT
+TACAACCTGTTTACACAAAAATACACTCCCTCTGAACCAAAAACCATTACGTCTGCCTCC
+CAGGATGGAGACAAGCTATGCAAGAAGAGATGTCGGCATTAA
+--------------------------------------------------------------------------------------------------------------------------
+
+USAGE:
+ 
+##Running PhaseTank from the following command: 
+
+Usage: \$ perl PhaseTank.pl --genome <genome_file.fa> --lib <read_file_list> [options]
+Or \$ perl PhaseTank.pl --cdna <cdna_file.fa> --lib <read_file_list> [options] 
+The followings are the detailed descriptions of the arguments and options in the use of PhaseTank:
+
+Arguments: 
+
+--genome <string>. Supply PhaseTank with genome sequence in FASTA format as reference sequences. Or --cdna <string>. Also could supply PhaseTank with cdna sequence in FASTA format as reference sequences.
+
+--lib <string>. Supply PhaseTank with a comma-separated list of file(s) containing reads in FASTA format.
+
+Options:
+--filter <string>. Supply PhaseTank with FASTA format of other ncRNA sequences. It can help PhaseTank to exclude the reads mapped to other ncRNAs (e.g. tRNA, rRNA, snoRNA). 
+
+--miR <string>. Supply PhaseTank with a list of miRNAs in FASTA format for miRNA-directed PHAS gene cleavage detection. This option will be ignored without ¡®¡ªtrigger_miRNA¡¯.
+
+--degradome <string>. Supply PhaseTank with a set of degradome sequencing reads in FASTA format for phasiRNA targets prediction. 
+
+--target <string>. Supply PhaseTank with a FASTA format file containing the interested genes, among which to search the phasiRNA targets.
+
+--trigger_miRNA. Tell PhaseTank to detect miRNA-directed TAS cleavage. It is inactive by default.
+
+--phasiRNA_target. Tell PhaseTank to predict the phasiRNA targeting genes. It is inactive by default.
+
+--ratio <float>. Set phased ratio cutoff value. The default is 0.3.
+
+--number <int>. Set phased number cutoff value. The default is 4.
+
+--abun <int>. The total abundance of phased reads in the phasiRNA cluster. Default is 100. Note, the default normalization level is per twenty millions (20,000,000, can be changed by ¡®--nor <int>¡¯), thus the default abundance value of 100 here is equal to setting 5 of RPM (reads per million).
+
+--READ_abun <int>. The minimum reads abundance to keep for PhaseTank prediction. Default is 1, which means if one read abundance is less than 1, it will be abandoned.
+
+--phasiRNA_abun <int>. Minimum read abundance of phasiRNAs for target prediction. This option will be ignored without ¡®¡ªphasiRNA_target¡¯.
+
+--drift <int>. Maximum phased drift. The default is 2.
+
+--size <int>. Length of phased reads. The default is 21.
+
+--nor <int>. Tell PhaseTank the normalization level for the libraries. Default is 20,000,000.
+
+--island <int>. That is the maximum separation distance of two phasiRNAs in each cluster. The default is 84.
+
+--extendLEN <int>. The length on each side of siRNA cluster (or phasiRNA cluster) will be excised from the reference sequence. The default is 80.
+
+-- max_hits <int>. Tell PhaseTank the ¡®-m¡¯ cutoff while using Bowtie (¡®-m¡¯ represent the maximum mapped hits to the reference, if goes out the value, the reads will be filtered out). The default is 5 here. Note that with this parameter changed, the prediction results may fluctuate slightly in big and small dataset due to a few reads may be removed in the big dataset. 
+
+--per <float>. Within 0.01-1.00. The top percentage of RSRP value of sequences was put to the later program. The default is 0.05 (5%).
+
+--rsrp <float>. The RSRP value for PhaseTank to filter the sequences. Default is 1.
+
+--CALL_RSRP. Tell PhaseTank to estimate RSRP cutoff from the given reads libraries, which is set from the top 5% (default, can be changed by ¡®¡ªper <float>¡¯) of RSRP value of sequences for the later processes. It is inactive by default. You could active this module by ¡®--CALL_RSRP¡¯ when you analyze other organisms (should use whole cDNA as input references). Or you also can use the default value instead.
+
+--dir <string>. Set the directory in which PhaseTank will write its output files. The default is 'OUTPUT_run_time/'.
+
+--help. Print the help message and quit.
+
+--version. Print PhaseTank version number and quit.
+
+Type \'PhaseTank.pl --help\' for full list of options
+
+----------------------------------------------------------------------------------------------------------
+
+Analysis mode:
+5.2 Analysis Demonstration for Different Modes
+Here we provide four normal analysis modules using PhaseTank. In all of them, if you need to exclude some other ncRNAs you can input the FASTA format of the sequences by ¡®--filter <ncRNA.fa>¡¯ (for example: ¡®--filter ath_ncRNA.fa¡¯ in our datasets) to the following commands.
+
+5.2.1	Predict PHAS loci from the given organism and read libraries
+
+Irrelevant options: --miR, --degradome, --trigger_miRNA, --phasiRNA_target, --target, --phasiRNA_abun
+
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa 
+
+5.2.2 Predict phasiRNAs and search their miRNA-triggered cleavage
+Required options: --miR, --degradome, --trigger_miRNA
+Irrelevant options: --target, --phasiRNA_target, --phasiRNA_abun
+
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa --miR ath_miRNA.fa --degradome de_GSM278335.fa ¨Ctrigger_miRNA
+
+5.2.3 Predict phasiRNAs and their targets
+Required options: --degradome, --target, --phasiRNA_target
+Irrelevant options: --miR, --trigger_miRNA
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa --degradome de_GSM278335.fa --target ath_cDNA_TAIR10.fa --phasiRNA_target
+
+5.2.4 Predict phasiRNAs, search the miRNA-triggered cleavage and detect phasiRNAs targets
+	Required options: --miR, --degradome, --target, --trigger_miRNA, --phasiRNA_target
+
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa --miR miRNA.fa --degradome de_GSM278335.fa --target ath_cDNA_TAIR10.fa --phasiRNA_target
+
+
+Mode1: Predict phasiRNAs from the given organism and read libraries
+
+Irrelevant options: --miR, --degradome, --trigger_miRNA, --phasiRNA_target, --target, --phasiRNA_abun
+
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa 
+
+Mode2: Predict phasiRNAs and search their miRNA triggered cleaveage
+
+Required options: --miR, --degradome, --trigger_miRNA
+Irrelevant options: --target, --phasiRNA_target, --phasiRNA_abun
+
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa --miR ath_miRNA.fa --degradome de_GSM278335.fa ¨Ctrigger_miRNA
+
+Mode3: Predict phasiRNAs and their targets
+
+Required options: --degradome, --target, --phasiRNA_target
+Irrelevant options: --miR, --trigger_miRNA
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa --degradome de_GSM278335.fa --target ath_cDNA_TAIR10.fa --phasiRNA_target
+
+Mode4: Predict phasiRNAs, search the miRNA-triggered cleavage and detect phasiRNAs targets
+
+Required options: --miR, --degradome, --target, --trigger_miRNA, --phasiRNA_target
+
+Example:
+\$ perl PhaseTank_v1.pl --genome ath_genome_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa --miR miRNA.fa --degradome de_GSM278335.fa --target ath_cDNA_TAIR10.fa --phasiRNA_target
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+Output files will add to 'OUTPUT_runtime/'.	It includes:
+
+	1: Pred_tab_runtime
+
+	It is an tab-separated file and the "#" gives the what the value represent in each row.
+	
+	Note:
+	
+	If your analysis did not contain '--target_m', the last row 'Triggered_miRNA' will not exist.
+	
+	The 'No' is count by the phased_score. Bigger phased_score, smaller 'No' and more possible to be PHAS loci. 
+	
+	Beg:End(cluster) represent the begin and end position of phased cluster region, which is defined as a specific transcript region, which contained at least four phasiRNAs hits with a maximum separation distance of 84-nt based on the previous studies (Johnson, et al., 2009; Zhang, et al., 2012)
+	
+	2: Align_runtime
+	
+	Each PHAS loci info is separated by '//'.
+	
+	The '>' line is the loci information as marked.
+	
+	The following lines which contained many '.' are the mapped situation of each phased reads on each PHAS cluster. In the end, it contains the read mapped information.
+	
+	The cluster sequence is listed in the middle without any '.'. The top one is the sense strand and the bottom is anti-sense sequence.
+	
+	Reads over the cluster are mapped to the sense strand. In contrast, reads below the cluster are mapped to anti-sense strand.
+	
+	Lines begins with '##' are the annotation lines for the following information.
+	
+	The 'bin_x' is the bin number, which is from 'bin_1', 'bin_2' to 'bin_21' for each cluster see detail in the chapter written by Michael J. Axtell (2010). It ranked by their corresponding abundance.
+	
+	'Abun' is the total abundance of reads mapped to this bin position.
+	
+	'Abun_ratio' is the ratio of each bin position abun to the total abundance to this region.
+	
+	'Phased_pos(21 nt mapped pos)' are positions belonging to the bin_x and have mapped 21-nt reads. Like '1, 22, 43, 64, 85...155,176...260,281,302,...449' all these positions are belonging to 'bin_1'. But only part of the positions have 21nt mapped phased-reads.
+	
+	The same positions represent that phased reads are mapped on dsRNAs. We adjust the anti-sense mappable reads to the sense strand positions by plus 2 to the coordinates. Because the 21nt-duplex have 2-nt overhangs on the 3-terminal.
+	
+	3: miRNA_target_runtime
+	
+	This is the predicted results produced by CleaveLand4. The input file is the predicted PHAS loci in FASTA format, miRNAs in FASTA format and the degradome data.
+	
+	see detailed description in CleaveLand4_totorial.pdf (http://www.bio.psu.edu/people/faculty/Axtell/AxtellLab/Software.html)
+	
+	4: PhasiRNAs_runtime
+	
+	It is the FASTA format of phasiRNAs predicted by PhaseTank.
+
+example:	
+>AT2G27400.1_378(+)
+TACAAGCGAATGAGTCATTCA
+
+	Line initiates with '>' is the id of the phasiRNAs. For example, 'AT2G27400.1' is the ID for this phasiRNA producing gene. '378' is only a excision number to distinguish each phasiRNAs from the same loci. '(+)' is the strand it comes from.
+
+	5: PhasiRNA_target_runtime
+	
+	This is the predicted results produced by CleaveLand4. The input file is the mRNA sequence in FASTA format, phasiRNAs in FASTA format and the degradome data.
+	
+	see detailed description in CleaveLand4_totorial.pdf (http://www.bio.psu.edu/people/faculty/Axtell/AxtellLab/Software.html)
+	
+	6: Cascades_runtime
+	
+	This is the cascades detected for predicted PHAS loci by PhaseTank in the given organism.
+	
+	Each PHAS loci is separated by '//'.
+	
+	Lines starts with '>' is the annotated information for this loci.
+	
+	The following line is:
+	
+	Sometimes, it reports triggered miRNAs for TAS genes, which is found to guide the cleavage of the TAS genes on the complementary region, especially on the 10-11 position  from the 5 terminal of the miRNA.
+	
+	Sometimes, it reports cleaved miRNAs for PHAS genes, which is the predicted results by CleaveLand4.
+	
+	If there is no targeting miRNAs, it directly reports the phasiRNAs and the predicted targets by CleaveLand4.
+	
+	If no targets by phasiRNA have been found, no information report.
+	
+	'AT2G39681.1_627(+)	-->	AT5G08680.1' represent the targeting direction from 'AT2G39681.1_627(+)' to 'AT5G08680.1'.
+	
+	7: Run_log_runtime
+	it contains full list of the STEDRR screen print.
+	
+	8: Excised_cluster_runtime
+	It contained all clusters excised from the genome.
+example:
+>chr_5_2	28430	28783
+TTTGTTTTCGTGTTTTGTGGACTTAATTTGGGGGTTTATGATGAGTATGTGTAGGTATCTTTTTTTTTTTTTTTTTTTTTGTCAAAACACAACTTTCATTCATTAAGGCCTCAAGAGAGGAAAGTTGATACAAGCTACGATAATACAACAGAAAGAAAGATACAAGTTCCATGAGTTTTCCAAAGGGATGTTCACTTTTAAAAAGTTTGCAATGGTTGAAAAATCTGTTGAAACTATAGCGGATTCGACCATGAAGACGAGCTTCGCGAAATCCTCGACCAACGGGTGGTCATAGACGGCTCGAGCAAACAATGCATACAAGCTTTTAGAAACAAACTCCAAAGAGGAGGCTGT
+
+"chr_5" is the chromosome number; "_2" is the number recorded in PhaseTank to distinguish each clusters excised from chr_5;
+"28430" is the beg of this cluster; "28783" is the end of this cluster.
+--------------------------------------------------------------------------------------------------------------
+
+Conventions and recommendations
+
+i.	In this manual, all the file names are in italic and the directory names are in bold and italic. 
+	Besides, the command lines are listed in the grey backgrounds which start with $. Make sure your files are in UNIX format.
+
+ii.	In our method, the relative small RNA production (RSRP) for a sequence. Therefore, the default value of RSRP here is set
+
+	from the given data of Arabidopsis, which may be fluctuated in different datasets. However, the default value is recommended
+
+	to use in your analysis. Because we have analyzed several libraries, the RSRP value will actually fluctuated for different 
+ 
+	datasets, but it is quite slight. If you still want to estimate RSRP value in your dataset, you need to use whole cDNA sequences
+
+	as your reference sequences and also should add option ¡®--CALL_RSRP¡¯ in your command line.
+
+	For example:
+
+	\$ perl PhaseTank_v1.pl --cdna ath_cdna_TAIR10.fa --lib GSM1174496.fa,GSM277608.fa,GSM342999.fa,GSM709567.fa,MTSRNA1.fa,RMMT10.fa ¨CCALL_RSRP 
+
+iii.	If there is a file containing other annotated ncRNAs in your aimed species, you can use this file to filter out the annotated ncRNAs in PhaseTank. 
+
+iv.	In PhaseTank, the reference could be the genome sequences or any FASTA format of sequences (such as cDNA, EST, or your interested genes).
+
+	According to the prediction results of our test, the genome sequences contained the richest information for PHAS genes detection.
+
+	While if there is no complete genome assembly, other sequences data could also be used to predict PHAS loci with good sensitivity and specificity.
+
+
+v.	The running time for PhaseTank mainly depends on the target prediction by CleaveLand4. It takes about 3-4 hours for analysis
+
+	in 5.2.4 using the listed files and with the default settings. Option like ¡®¡ªphasiRNA_abun¡¯ will largely influence the prediction time, because it directly decides the number of phasiRNAs which will be put into targets prediction pipelines.
+
+vi.	We used modified CleaveLand4 in our pipeline for searching trigger miRNA and phasiRNA targets. The CleaveLand4 is just 
+
+	modified to remove the screen output and some unimportant files, while the other parts and the core output file remain unchanged.
+
+	Thus the prediction results will be clear.
+
+--------------------------------------------------------------------------------------------------------------------------
+
+This is the end of PhaseTank. Bugs, questions or suggestions are welcome for PhaseTank (Email: guoql.karen@gmail.com).
+If you use PhaseTank in your work, please cite us :
+
+PUBLISH
