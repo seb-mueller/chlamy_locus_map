@@ -82,7 +82,7 @@ dev.off()
 
 #########nloci <- loci[,-1]; nloci@locLikelihoods <- loci@locLikelihoods[,-1]
 
-fdr <- 0.1
+fdr <- 0.05
 loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE)
 
 # get an idea of the sequencing depth added by each replicate groups
@@ -97,7 +97,7 @@ cumloc <- sapply(1:length(ordLoc), function(ii) {
   message(ii)
   selLoc <- segD[,segD@replicates %in% ordLoc[1:ii]]
   selLoc@locLikelihoods <- as.matrix(selLoc@locLikelihoods[,ordLoc[1:ii],drop = FALSE])
-  z <- try(selectLoci(selLoc, FDR = 0.1 , perReplicate = TRUE))
+  z <- try(selectLoci(selLoc, FDR = 0.05 , perReplicate = TRUE))
     if(class(z) == "try-error") return(0) else return(nrow(z))
 })
 
