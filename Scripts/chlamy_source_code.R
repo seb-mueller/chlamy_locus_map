@@ -551,7 +551,7 @@ countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2
   countswtnorm <- getCounts(segments=locAnn,aD=aD,cl=cl)
 
   locAnn$repetitiveness <- 1-(rowSums(countswtnorm)/rowSums(countswt))
-  locAnn$repetitivenessClass <- as.ordered(cut(locAnn$repetitiveness,unique(quantile(locAnn$repetitiveness,probs=seq(0,1,0.25),na.rm=TRUE),include.lowest=TRUE))) #Added unique function
+  locAnn$repetitivenessClass <- as.ordered(cut(locAnn$repetitiveness,unique(quantile(locAnn$repetitiveness,probs=seq(0,1,0.25),na.rm=TRUE)),include.lowest=TRUE)) #Added unique function
   levels(locAnn$repetitivenessClass) <- c("low","median","high","very_high")
   locAnn
 }
@@ -761,4 +761,50 @@ methylationDiff <- function(locAnn, annoDir = "resources") {
   locAnn <- computeOverlaps(locAnn,methylation)
 
   return(locAnn)
+}
+
+#Phasing process and annotate
+phaseMatch2 <- function(locAnn, annoDir = "resources") {
+  #Load in packages
+  require(GenomicRanges)
+  require(rtracklayer)
+
+  #Read in output
+  phaseOutput <- read.table(file.path(resourses,"Pred_tab_2018.11.22_10.08"),header=TRUE,stringsAsFactors = FALSE)
+  #Build granges file out of table
+  #find seqnames
+  seqnamessplit <- strsplit(phaseOutput$ID,"_",fixed=TRUE)
+  seqnamestemp <- paste0(lapply(seqnamessplit,"[[",1),"_",lapply(seqnamessplit,"[[",2))
+  #Extract beginning and end coordinates
+  begin <- as.numeric(lapply(strsplit(phaseOutput$Beg.End,":",fixed=TRUE),"[[",1))
+  end <- as.numeric(lapply(strsplit(phaseOutput$Beg.End,":",fixed=TRUE),"[[",2))
+  #generate GRanges object of phased loci for overlap computation
+  phased <- GRanges(seqnames = seqnamestemp,IRanges(start=begin,end=end),
+                    length=phaseOutput$Length,phasedRatio=phaseOutput$Phased_Ratio,phasedAbundance=phaseOutput$Phased_Abundance,
+                    phasedNumber=phaseOutput$Phased_Number,phasedScore=phaseOutput$Phased_Score)
+  
+  #Compute matches
+  locAnn <- computeOverlaps(locAnn,list(phased=phased))
+  overlaps <- findOverlaps(locAnn,phased)
+  #Default phaseScore is 0 (i.e. no phasing)
+  locAnn$phaseScore <- rep(0,length(locAnn))
+  #Assign phase scored where only one phased locus is present
+  locAnn$phaseScore[queryHits(overlaps)[table(queryHits(overlaps))==1]] <- phased$phasedScore[subjectHits(overlaps)[table(queryHits(overlaps))==1]]
+  #For areas with more than one phased locus, assign the average phasing score 
+  for(index in as.numeric(names(which(table(queryHits(overlaps))>1)))) {
+    subjectHits(overlaps) == index
+    locAnn$phaseScore[index] <- mean(phased$phasedScore[subjectHits(overlaps)[queryHits(overlaps) == index]])
+  }
+  #Establish phaseClass field, default is "none"
+  locAnn$phaseClass <- factor(rep("none",length(locAnn)),levels=c("low","median","high","very_high","none"))
+  #Cut values into discrete quartiles
+  tempClass <- as.ordered(cut(locAnn$phaseScore[queryHits(overlaps)],
+                              unique(quantile(locAnn$phaseScore[queryHits(overlaps)],probs=seq(0,1,0.25),na.rm=TRUE)),include.lowest=TRUE))
+  #Assign levels to classification
+  levels(tempClass) <- c("low","median","high","very_high","none")
+  #Add classifications to phaseClass field
+  locAnn$phaseClass[queryHits(overlaps)] <- tempClass
+  
+  #Return locAnn
+  locAnn
 }
