@@ -59,7 +59,7 @@ compileAnnotations <- function(annoDir = "resources", annoFile) {
   #Save all as one big RData file
   save(genes,anno,
        transposons, repetativeSeq, TE_Class_DNA, TE_Class_RET,
-       TE_Undefined,TE_L1,TE_Gypsy,TE_Copia,TE_hAT,TE_RTE,TE_Novosib,TE_DualenRandI,
+       TE_L1,TE_Gypsy,TE_Copia,TE_hAT,TE_RTE,TE_Novosib,TE_DualenRandI,
        TE_P,TE_Mariner,TE_REM1,TE_EnSpm,TE_DIRS,TE_TOC2,TE_TOC1,TE_Gulliver,TE_TCR1,TE_Harbinger,
        rRNA,miRNA,MSAT,mRNA,irs,trs,promoter,threeprimeUTR,fiveprimeUTR,exons,CDS,
        introns,file=file.path(annoDir, annoFile))
@@ -310,7 +310,7 @@ annotationSummaryTable <- function(mapFile , mapDir,specificAnnotations = FALSE,
   load(file.path(mapDir, mapFile))
   #load("gr7_all_anno.Rdata")
   #Assign file
-  locusMap <- gr7
+  locusMap <- gr
   justmcols <- as.data.frame(mcols(locusMap))
   #Subset annotation if specified to do so in the parameters
   if(specificAnnotations != FALSE) {
@@ -361,8 +361,8 @@ clusterAnnotationTable <- function(clusteredMapFile, mapDir) {
   require(rtracklayer)
   #Load in data
   load(file.path(mapDir,clusteredMapFile))
-  load("gr7_clustered.Rdata")
-  locusMap <- gr7
+  #load("gr7_clustered.Rdata")
+  locusMap <- gr
   #Extract mcols
   justmcols <- mcols(locusMap)
   #Extract clusters as seperate vector

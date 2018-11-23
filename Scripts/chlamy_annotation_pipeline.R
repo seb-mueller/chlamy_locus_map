@@ -95,11 +95,11 @@ compileAnnotations(annoDir, annoFile = annoFile)
 #The functions are found 'chlamy_source_code.R'
 
 # annotate by size class
-gr <- sizeClass(gr, intervals = c(0,30,75,150,1000,Inf))
+gr <- sizeClass(gr, intervals = c(0,100,400,1500,3000,Inf))
 table(gr$sizeclass)
 #
-#      (0,30]     (30,75]    (75,150] (150,1e+03] (1e+03,Inf]
-#          16          93         230        3252        1324
+#      (0,100]     (100,400]    (400,1500] (1500,3e+03] (3e+03,Inf]
+#          272          2113          3109         552         118
 
 # annotate with overlapping features
 gr <- expressionClass(locAnn = gr, loci = loci, wt = metawt)
