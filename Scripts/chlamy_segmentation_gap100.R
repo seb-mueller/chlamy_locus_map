@@ -85,7 +85,7 @@ hS<-heuristicSeg(sD=sD,aD=aD,getLikes=TRUE,cl=cl)
 save(hS, meta, file=file.path(segLocation, paste0("hS_chlamy_segmentation_", mycomment, ".RData")))
 
 #Generate a genome map
-segD<-classifySeg(aD=aD,sD=sD,cD=hS, getLikes=TRUE,cl=cl)
+segD<-classifySeg(aD=aD,sD=sD,cD=hS, getLikes=TRUE,cl=cl, tempDir = "tmp_classifySeq")
 attr(segD, "parameter")   <- mycomment
 attr(segD, "git")         <- gitfingerprint
 attr(segD, "sessionInfo") <- sessionInfo()
