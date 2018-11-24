@@ -151,13 +151,13 @@ intronCalculate <- function(annoDir = "resources") {
 
 #Function classified transposon dataset into standardised classification scheme
 #Need to specify whether to keep unknowns
-transposonProcess <- function(annoDir = "resources",keepUnknowns=FALSE) {
+transposonProcess <- function(annoDir = "resources",gitdir,keepUnknowns=FALSE) {
   #Require some libraries
   require(rtracklayer)
   require(GenomicRanges)
   #Read in repeatMasked file and reference file
   transposons <- import.gff3(file.path(annoDir, "Creinhardtii_281_v5.5.repeatmasked_assembly_v5.0.gff3"))
-  referenceFile <- read.csv("transposon_classification_scheme.csv",header=TRUE, stringsAsFactors = FALSE)
+  referenceFile <- read.csv(file.path(gitdir,"transposon_classification_scheme.csv"),header=TRUE, stringsAsFactors = FALSE)
   #Set up empty columns
   transposons$name <- rep("Unknown", length(transposons))
   transposons$class <- rep("Unknown", length(transposons))

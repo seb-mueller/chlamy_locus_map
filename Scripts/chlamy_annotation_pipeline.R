@@ -36,8 +36,8 @@ metawt <- meta$Controls %in% c("wt")
 source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 
 # list.files(segLocation, pattern = "segD.*")
-inputdata <- "segD_chlamy_segmentation_multi200_gap100.RData" #13739
-aDfile <- "aD_chlamy_segmentation__multi200_gap100.RData"
+inputdata <- "segD_chlamy_segmentation_LociRun2018_multi200_gap100.RData" #13739
+aDfile <- "aD_chlamy_segmentation_LociRun2018_multi200_gap100.RData"
 # inputdata <- "segD_chlamy_segmentation_smallset_200.RData" # 2loci
 # inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian100.RData" #8977
 # inputdata <- "segD_chlamy_segmentationmulti200_wt_adrian200.RData" #8158
@@ -88,7 +88,7 @@ write.csv(as.data.frame(gr),file=file.path(baseDir, "phasing/loci_for_phasing.cs
 #intronCalculate()
 #Process transposon file
 
-transposonProcess(annoDir)
+transposonProcess(annoDir,gitdir)
 #Compute and compiles annotations
 compileAnnotations(annoDir, annoFile = annoFile)
 #####the next set of functions take the annotated locus object 'gr' and add some more annotation data#####
