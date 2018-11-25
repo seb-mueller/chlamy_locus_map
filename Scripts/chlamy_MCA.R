@@ -19,37 +19,42 @@ library(MASS)
 library(RColorBrewer)
 library(mclust) 
 
-source("/home/sm934/code/R/seb_functions.r")
-load("loci7_fdr01_c.rdata") #not mentioned, should it be loci7?
-load("gr7_all_annotations15.rdata")
+#source("/home/sm934/code/R/seb_functions.r")
+#TODO where is the correct segmentation stored?
+load("loci7_fdr01_c.rdata")
+load("gr_all_annotations15.rdata")
 
-##MCA for categoriacal data!
+##MCA for categorical data!
 #multivariate methods that allows us to analyze the systematic patterns of variations with categorical data
 #keep in mind that MCA applies to tables in which the observations are described by a set of qualitative (i.e. categorical) variables
 
 # selected factors which will be used to inform the clustering
+#TODO Transposons and phasing
+#TODO decide exactly which annotations are going in main and supplementary factors
 selFac <- c("sizeclass","predominant_5prime_letter","ratio21vs20Class","expressionClass", 
-	"repetitivenessClass","Phased","meth","zygotespecific","vegetativespecific",
-	"CC125specific","CC1883specific","notDCL3dependent","DCL3dependent",
-	"miRNA","gene","IR","TR","promoter","ratio_strand_class","SoloLTR","TEorder") 
+            "repetitivenessClass","zygotespecific","vegetativespecific",
+            "CC125specific","CC1883specific","CC4350specific","DCL3dependent","AGO3dependent",
+            "miRNA","CDS","exons","intergenic","IR","TR","promoter","ratio_strand_class",
+            "methCG","methCHH","methCHG") 
 
 # supplementary factors for which association with clusters will be calculated, but which will not inform the clustering
-supFac <- c("CDS","exon","fiveprimeUTR","threeprimeUTR","Jspecific","TE","TEclass","methCG","methCHH","methCHG","ratioBigvsNormalClass","ratioSmallvsNormalClass")
+supFac <- c("fiveprimeUTR","threeprimeUTR","Jspecific","ratioBigvsNormalClass","ratioSmallvsNormalClass")
 
-cF7 <- as.data.frame(elementMetadata(gr7[,c(selFac,supFac)]))                                                      
+cF7 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))                                                      
 
 png("catchall.png")
 
 #tables summarising output
-write("", file = "ClassTable_gr7.txt")
+write("", file = "ClassTable_gr.txt")
 for(ii in 1:ncol(cF7)) {
-    cat(colnames(cF7)[ii], "\t", paste(levels(cF7[,ii]), collapse = "\t"), "\n", file = "ClassTable_gr7.txt", append = TRUE)
-    cat("", "\t", paste(as.numeric(table(cF7[,ii])), collapse = "\t"), "\n\n", file = "ClassTable_gr7.txt", append = TRUE)
+    cat(colnames(cF7)[ii], "\t", paste(levels(cF7[,ii]), collapse = "\t"), "\n", file = "ClassTable_gr.txt", append = TRUE)
+    cat("", "\t", paste(as.numeric(table(cF7[,ii])), collapse = "\t"), "\n\n", file = "ClassTable_gr.txt", append = TRUE)
 }
 
 # MCA
 mc7 <- MCA(cF7, graph = FALSE,ncp = 4 ,quali.sup=which(colnames(cF7) %in% supFac))
-
+#TODO run all the diagnostics
+#TODO edit save locations and save names to more appropriate
 # parameter sweep on dimensions 1-15 and clusters 2-15
 cl <- makeCluster(14)
 dimList <- list()
@@ -68,13 +73,13 @@ image(sapply(dimList, function(x) sapply(x[-1], function(y) y$betweenss / y$tots
 dev.off()
 
 # rand test to compare overlap with transposable element superfamilies 
-zzz <- (sapply(dimList, function(x) sapply(x[-1], function(y) adjustedRandIndex(y$cluster, gr7$TE))))
+zzz <- (sapply(dimList, function(x) sapply(x[-1], function(y) adjustedRandIndex(y$cluster, gr$TE))))
 png("kmean_randTE.png")
 image(zzz)
 dev.off()
 
 # rand test to compare overlap with annotated features. Used in Tom's code, I no longer use Overlaptype
-#zz <- (sapply(dimList, function(x) sapply(x[-1], function(y) adjustedRandIndex(y$cluster, gr7$overlaptype)))) #Overlaptype loses lots of important info
+#zz <- (sapply(dimList, function(x) sapply(x[-1], function(y) adjustedRandIndex(y$cluster, gr$overlaptype)))) #Overlaptype loses lots of important info
 #png("kmean_rand.png")
 #image(zz)
 #dev.off()
@@ -174,16 +179,18 @@ dev.off()
 
 
 # HCPC code from FactoMiner needs tweak to work on kmeans only.
-source("/home/tjh48/Code/segmentMap_III/hcpc.R")
+source(file.path(gitdir,"Scripts/hcpc.R"))
+#source("C:/Users/Nick/Documents/PhD/Projects/Chlamy/chlamy_locus_map/Scripts/hcpc.R")
 
 #MCA with clusters and dimensions set according to images
+#TODO decide cluster and dimension number from the plots
 nclust <- 4; ndim <- 3
 #nclust <- 4; ndim <- 4
 #nclust <- 5; ndim <- 4
 #nclust <- 6; ndim <- 4
 mc7 <- MCA(cF7, graph = FALSE,ncp = ndim ,quali.sup=which(colnames(cF7) %in% supFac))
 resMCA <- HCPC(mc7, graph = FALSE, proba = 1, consol = FALSE, order = FALSE, nb.clust = nclust, kk = nclust, method = "centroid")
-gr7$cluster <- as.factor(resMCA$data.clust$clust)
+gr$cluster <- as.factor(resMCA$data.clust$clust)
 
 # now check feature associations
 
@@ -215,13 +222,14 @@ pvalmatrix[pvalmatrix > 255] <- 255
 pvalmatrix[pvalmatrix < -255] <- -255
 
 
-colnames(pvalmatrix) <- paste(colnames(pvalmatrix), " (", sapply(colnames(pvalmatrix), function(ii) sum(gr7$cluster == ii)), ")", sep = "")
+colnames(pvalmatrix) <- paste(colnames(pvalmatrix), " (", sapply(colnames(pvalmatrix), function(ii) sum(gr$cluster == ii)), ")", sep = "")
 
 # select only significant classes
 pvalmatrixsub <- pvalmatrix[which(rowSums(abs(pvalmatrix) > 3) > 1),]
 pvalmatrixsub <- pvalmatrixsub[-grep("FALSE", rownames(pvalmatrixsub)),]
 #pvalmatrixsub <- pvalmatrixsub[-grep("overlaptype=", rownames(pvalmatrixsub)),]
 
+#TODO decide the select variables to use, and modify plot to have nice row names
 # or select specific named classes
 selectP <- c(
     paste("sizeclass=", levels(cF7$sizeclass), sep = ""),
@@ -251,13 +259,13 @@ selectP <- c(
 pvalmatrixsel <- pvalmatrix[selectP,]
 
 # heatmap function needs some tweaks to work on these data
-source("/home/bioinf/tjh48/Code/segmentMap_III/heatmap_centred.R")
-
+source(file.path(gitdir,"Scripts/heatmap_centred.R"))
+#source("C:/Users/Nick/Documents/PhD/Projects/Chlamy/chlamy_locus_map/Scripts/heatmap_centred.R")
 
 #examine heatmaps
 for(ii in 1:nrow(pvalmatrixsub))
     rownames(pvalmatrixsub)[ii] <- gsub(paste("=", gsub("=.*", "", rownames(pvalmatrixsub)[ii]), "_", sep = ""), "=", rownames(pvalmatrixsub)[ii])
-png("featureMatrix4_new_gr7.png",width=1200, height = 1600)
+png("featureMatrix4_new_gr.png",width=1200, height = 1600)
 par(mar = c(5.1, 4.1, 9.1, 2.1))
 heatmap.2(pvalmatrixsub,
           Colv = NA,
@@ -266,7 +274,7 @@ dev.off()
 
 for(ii in 1:nrow(pvalmatrixsel))
     rownames(pvalmatrixsel)[ii] <- gsub(paste("=", gsub("=.*", "", rownames(pvalmatrixsel)[ii]), "_", sep = ""), "=", rownames(pvalmatrixsel)[ii])
-png("featureMatrix4b_gr7.png",width=1200, height = 1600)
+png("featureMatrix4b_gr.png",width=1200, height = 1600)
 heatmap.2(pvalmatrixsel,
           Colv = NA, Rowv = NA,
           col = rev(c(colorRampPalette(colors = c("blue", "white"))(255), colorRampPalette(colors = c("white", "red"))(255))), scale = "none", margins = c(8, 14), cexRow = 1.1)
@@ -285,13 +293,13 @@ filcat <- lapply(categories, function(x) {
     x
 })
 
-save(gr7, file="gr7_clustered.RData")
+save(gr, file="gr_clustered.RData")
 save(resMCA, file="resMCA.RData")
 #load("resMCA.RData")
 
 
 # try plotting density of loci in different clusters across genome; compare with gene and transposable element densities.
-
+#TODO decide what's going on the chromosome tracks
 #Genes
 genes <- import.gff3("/home/bioinf/nem34/Creinhardtii_281_v5.5.gene_exons.gff3")
 mRNA <- genes[genes$type=="mRNA"]
@@ -316,7 +324,7 @@ annottrack_methCHG <- data.frame(chrom=as.factor(as.character(methCHG@seqnames))
 annottrack_meth2 <- rbind(annottrack_methCG,annottrack_methCHH,annottrack_methCHG)
 
 #loci
-gr<-gr7;prefix="loci_"
+gr<-gr;prefix="loci_"
 annottrack_allloci <- data.frame(chrom=as.factor(paste(as.character(gr@seqnames), sep = "")), start=start(gr), annot=rep("all loci",length(gr)))
 annottrack_cluster <- data.frame(chrom=as.factor(paste(as.character(gr@seqnames), sep = "")), start=start(gr), annot=paste("LC", gr$cluster, sep = ""))
 
@@ -365,7 +373,7 @@ ggsave(gg,file="Clustercoverage_chr4.png",width=10,height=5)
 #Output paragons (most representative loci for each cluster) for plotting in genome viewer
 lapply(1:nclust, function(ii) {
     x <- resMCA$desc.ind$para[[ii]]
-    write.table(as.data.frame(gr7[as.integer(names(x)),])[,1:4], sep = "\t", quote = FALSE, row.names = TRUE, col.names = NA, file = paste("paragons_LC", ii, ".txt", sep = ""))
+    write.table(as.data.frame(gr[as.integer(names(x)),])[,1:4], sep = "\t", quote = FALSE, row.names = TRUE, col.names = NA, file = paste("paragons_LC", ii, ".txt", sep = ""))
 })
 
 dev.off() 
