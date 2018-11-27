@@ -1,9 +1,9 @@
 # condor files
 Key_Coding_Scripts
-Scripts/stdout-*
-Scripts/log-*
-Scripts/error-*
-Scripts/condor-*
+stdout-*
+log-*
+error-*
+condor-*
 # History files
 .Rhistory
 .Rapp.history
@@ -41,3 +41,10 @@ vignettes/*.pdf
 *.utf8.md
 *.knit.md
 .Rproj.user
+
+# output from PhaseTank_
+OUTPUT*
+Bowtie*
+Mixed*
+
+*.pdf
