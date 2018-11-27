@@ -1,0 +1,464 @@
+
+############################## PhaseTank version1.0 ##############################
+
+Run time: 2018.11.27_18:08:49
+
+#Input files:
+
+	Rerference data: /projects/nick_matthews/resources/Creinhardtii_236.fa
+	Read file:
+		(1): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2108_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(2): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2121_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(3): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2122_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(4): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2123_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(5): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2124_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(6): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2125_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(7): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2181_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(8): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2182_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(9): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2183_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(10): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2184_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(11): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2185_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(12): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2186_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(13): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2187_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(14): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2188_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(15): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2189_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(16): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2301_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(17): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2302_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(18): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2303_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(19): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2310_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(20): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2311_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(21): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2312_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(22): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2313_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(23): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2314_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(24): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2315_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(25): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2322_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(26): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2323_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(27): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2324_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(28): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2325_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(29): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2326_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+		(30): /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2327_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta
+##Begin to check files at 2018.11.27_18:08:49..
+
+	Checking /projects/nick_matthews/resources/Creinhardtii_236.fa...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2108_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2121_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2122_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2123_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2124_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2125_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2181_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2182_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2183_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2184_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2185_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2186_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2187_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2188_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2189_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2301_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2302_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2303_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2310_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2311_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2312_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2313_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2314_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2315_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2322_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2323_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2324_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2325_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2326_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+	Checking /projects/nick_matthews/sequencing_data/fasta_with_counts/SL2327_assembly5_Chlamydomonas_reinhardtii.patman.aligned_reads.fasta...	
+##Finshed checking files
+
+
+#Begin to merge libraries at 2018.11.27_18:08:53..
+
+#Begin to merge libraries at 2018.11.27_18:08:53..
+
+	lines:47398		abun:1852966
+	lines:43218		abun:1631383
+	lines:39061		abun:1210355
+	lines:24142		abun:464534
+	lines:27726		abun:629503
+	lines:24635		abun:539571
+	lines:34116		abun:937081
+	lines:26395		abun:898575
+	lines:30431		abun:973763
+	lines:27302		abun:1073489
+	lines:28112		abun:998268
+	lines:34310		abun:1479966
+	lines:26011		abun:675780
+	lines:26479		abun:939664
+	lines:25925		abun:829710
+	lines:64576		abun:3275060
+	lines:44376		abun:2276918
+	lines:56632		abun:2973786
+	lines:126076		abun:2710610
+	lines:134634		abun:2461336
+	lines:124341		abun:1971500
+	lines:143920		abun:2417457
+	lines:143308		abun:3403700
+	lines:101357		abun:2071538
+	lines:79781		abun:1568982
+	lines:90752		abun:1748477
+	lines:193842		abun:2954892
+	lines:112051		abun:2301502
+	lines:44805		abun:1129056
+	lines:46262		abun:819637
+
+#Begin to excise RNA_producing cluster from genome data at 2018.11.27_18:09:06
+
+	Parsing /projects/nick_matthews/resources/Creinhardtii_236.fa ..
+
+#Making bowtie index for /projects/nick_matthews/resources/Creinhardtii_236.fa..
+
+#Mapping reads to /projects/nick_matthews/resources/Creinhardtii_236.fa using bowtie..
+
+
+	Searching and extracting clusters from chromosome_9 ..		found 190 clusters
+
+
+	Searching and extracting clusters from scaffold_53 ..		found 0 clusters
+
+
+	Searching and extracting clusters from chromosome_10 ..		found 179 clusters
+
+
+	Searching and extracting clusters from chromosome_17 ..		found 180 clusters
+
+
+	Searching and extracting clusters from scaffold_43 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_25 ..		found 2 clusters
+
+
+	Searching and extracting clusters from chromosome_6 ..		found 211 clusters
+
+
+	Searching and extracting clusters from scaffold_29 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_47 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_35 ..		found 4 clusters
+
+
+	Searching and extracting clusters from chromosome_2 ..		found 174 clusters
+
+
+	Searching and extracting clusters from scaffold_45 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_41 ..		found 3 clusters
+
+
+	Searching and extracting clusters from scaffold_36 ..		found 3 clusters
+
+
+	Searching and extracting clusters from chromosome_1 ..		found 164 clusters
+
+
+	Searching and extracting clusters from chromosome_14 ..		found 82 clusters
+
+
+	Searching and extracting clusters from scaffold_46 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_32 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_21 ..		found 16 clusters
+
+
+	Searching and extracting clusters from scaffold_19 ..		found 4 clusters
+
+
+	Searching and extracting clusters from scaffold_51 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_49 ..		found 1 clusters
+
+
+	Searching and extracting clusters from scaffold_54 ..		found 0 clusters
+
+
+	Searching and extracting clusters from chromosome_16 ..		found 129 clusters
+
+
+	Searching and extracting clusters from scaffold_44 ..		found 3 clusters
+
+
+	Searching and extracting clusters from scaffold_30 ..		found 3 clusters
+
+
+	Searching and extracting clusters from scaffold_39 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_37 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_33 ..		found 0 clusters
+
+
+	Searching and extracting clusters from chromosome_13 ..		found 124 clusters
+
+
+	Searching and extracting clusters from chromosome_5 ..		found 86 clusters
+
+
+	Searching and extracting clusters from scaffold_24 ..		found 2 clusters
+
+
+	Searching and extracting clusters from scaffold_48 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_42 ..		found 0 clusters
+
+
+	Searching and extracting clusters from chromosome_4 ..		found 102 clusters
+
+
+	Searching and extracting clusters from chromosome_15 ..		found 44 clusters
+
+
+	Searching and extracting clusters from scaffold_18 ..		found 2 clusters
+
+
+	Searching and extracting clusters from scaffold_38 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_27 ..		found 1 clusters
+
+
+	Searching and extracting clusters from scaffold_22 ..		found 3 clusters
+
+
+	Searching and extracting clusters from chromosome_11 ..		found 89 clusters
+
+
+	Searching and extracting clusters from scaffold_20 ..		found 6 clusters
+
+
+	Searching and extracting clusters from scaffold_23 ..		found 5 clusters
+
+
+	Searching and extracting clusters from scaffold_40 ..		found 0 clusters
+
+
+	Searching and extracting clusters from chromosome_3 ..		found 179 clusters
+
+
+	Searching and extracting clusters from chromosome_12 ..		found 285 clusters
+
+
+	Searching and extracting clusters from scaffold_34 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_28 ..		found 1 clusters
+
+
+	Searching and extracting clusters from scaffold_50 ..		found 0 clusters
+
+
+	Searching and extracting clusters from scaffold_26 ..		found 1 clusters
+
+
+	Searching and extracting clusters from scaffold_52 ..		found 0 clusters
+
+
+	Searching and extracting clusters from chromosome_7 ..		found 142 clusters
+
+
+	Searching and extracting clusters from chromosome_8 ..		found 108 clusters
+
+
+	Searching and extracting clusters from scaffold_31 ..		found 0 clusters
+
+
+	#Finish cluster finding 
+
+#Begin to map reads to reference seq and parse the mapped reads data at 2018.11.27_18:11:24
+#Making bowtie index for OUTPUT_2018.11.27_18.08/Excised_cluster_2018.11.27_18.08..
+
+#Mapping reads to OUTPUT_2018.11.27_18.08/Excised_cluster_2018.11.27_18.08 using bowtie..
+
+
+#Begin to parse reference information at 2018.11.27_18:11:33
+	OUTPUT_2018.11.27_18.08/Excised_cluster_2018.11.27_18.08 has been parsed!
+
+
+##Finished parsing files!
+
+
+##Important Values in PhaseTank:
+
+	Library_number: 30
+	ASRP: 0.129
+	RSRP: 1
+	phased ratio: 0.3
+	phased num: 4
+	phased size: 21 nt
+
+#Begin to process transcripts into core program at 2018.11.27_18:11:33..
+
+	passed:	1	chromosome_7_36
+	passed:	2	chromosome_8_87
+	passed:	3	chromosome_6_140
+	passed:	4	chromosome_4_94
+	passed:	5	chromosome_13_111
+	passed:	6	chromosome_14_3
+	passed:	7	scaffold_21_1
+	passed:	8	chromosome_2_81
+	passed:	9	chromosome_8_59
+	passed:	10	chromosome_1_25
+	passed:	11	chromosome_16_74
+	passed:	12	chromosome_1_98
+	passed:	13	chromosome_3_61
+	passed:	14	chromosome_5_22
+	passed:	15	chromosome_4_95
+	passed:	16	chromosome_13_113
+	passed:	17	chromosome_9_32
+	passed:	18	chromosome_2_163
+	passed:	19	chromosome_12_110
+	passed:	20	chromosome_5_68
+	passed:	21	chromosome_6_81
+	passed:	22	chromosome_14_29
+	passed:	23	chromosome_17_177
+	passed:	24	chromosome_12_181
+	passed:	25	chromosome_14_4
+	passed:	26	chromosome_5_71
+	passed:	27	chromosome_12_69
+	passed:	28	chromosome_5_16
+	passed:	29	chromosome_7_58
+	passed:	30	chromosome_10_61
+	passed:	31	scaffold_25_1
+	passed:	32	chromosome_2_1
+	passed:	33	chromosome_15_8
+	passed:	34	chromosome_12_173
+	passed:	35	chromosome_11_27
+	passed:	36	chromosome_3_114
+	passed:	37	chromosome_4_84
+	passed:	38	chromosome_4_85
+	passed:	39	chromosome_17_5
+	passed:	40	chromosome_13_54
+	passed:	41	chromosome_1_38
+	passed:	42	chromosome_6_101
+	passed:	43	chromosome_1_16
+	passed:	44	chromosome_8_102
+	passed:	45	chromosome_16_7
+	passed:	46	chromosome_5_36
+	passed:	47	chromosome_11_45
+	passed:	48	chromosome_13_53
+	passed:	49	chromosome_14_53
+	passed:	50	chromosome_2_58
+	passed:	51	chromosome_5_17
+	passed:	52	chromosome_9_156
+	passed:	53	chromosome_8_25
+	passed:	54	chromosome_7_76
+	passed:	55	chromosome_3_136
+	passed:	56	chromosome_13_14
+	passed:	57	chromosome_7_77
+	passed:	58	chromosome_17_167
+	passed:	59	chromosome_16_6
+	passed:	60	chromosome_6_157
+	passed:	61	chromosome_16_60
+	passed:	62	chromosome_2_107
+	passed:	63	chromosome_11_21
+	passed:	64	chromosome_17_134
+	passed:	65	chromosome_12_246
+	passed:	66	chromosome_17_149
+	passed:	67	chromosome_11_22
+	passed:	68	chromosome_3_166
+	passed:	69	chromosome_3_141
+	passed:	70	chromosome_6_196
+	passed:	71	chromosome_15_7
+	passed:	72	chromosome_5_24
+	passed:	73	chromosome_2_174
+	passed:	74	chromosome_11_46
+	passed:	75	chromosome_14_17
+	passed:	76	chromosome_16_126
+	passed:	77	chromosome_3_131
+	passed:	78	chromosome_3_130
+	passed:	79	chromosome_12_175
+	passed:	80	chromosome_5_58
+	passed:	81	chromosome_10_62
+	passed:	82	chromosome_17_90
+	passed:	83	chromosome_10_136
+	passed:	84	chromosome_1_5
+	passed:	85	scaffold_49_1
+	passed:	86	chromosome_7_50
+	passed:	87	chromosome_17_133
+	passed:	88	chromosome_12_70
+	passed:	89	chromosome_1_93
+	passed:	90	chromosome_17_116
+	passed:	91	chromosome_17_6
+	passed:	92	chromosome_12_109
+	passed:	93	chromosome_5_51
+	passed:	94	chromosome_3_135
+	passed:	95	chromosome_7_3
+	passed:	96	chromosome_6_159
+	passed:	97	chromosome_8_65
+	passed:	98	chromosome_10_80
+	passed:	99	chromosome_11_20
+	passed:	100	chromosome_1_1
+	passed:	101	chromosome_17_41
+	passed:	102	chromosome_12_208
+	passed:	103	chromosome_13_67
+	passed:	104	chromosome_9_21
+	passed:	105	chromosome_12_211
+	passed:	106	chromosome_4_86
+	passed:	107	chromosome_12_276
+	passed:	108	chromosome_5_50
+	passed:	109	chromosome_9_162
+	passed:	110	chromosome_1_91
+	passed:	111	chromosome_14_80
+	passed:	112	scaffold_35_1
+	passed:	113	chromosome_1_125
+	passed:	114	chromosome_2_82
+	passed:	115	chromosome_12_179
+	passed:	116	scaffold_21_16
+	passed:	117	chromosome_16_4
+	passed:	118	chromosome_1_69
+	passed:	119	chromosome_17_176
+	passed:	120	chromosome_12_129
+	passed:	121	chromosome_11_19
+	passed:	122	chromosome_12_278
+	passed:	123	chromosome_2_168
+	passed:	124	chromosome_9_151
+	passed:	125	chromosome_2_57
+	passed:	126	chromosome_10_21
+	passed:	127	chromosome_10_104
+	passed:	128	chromosome_1_58
+	passed:	129	chromosome_12_205
+	passed:	130	chromosome_2_85
+	passed:	131	chromosome_6_85
+	passed:	132	chromosome_8_33
+	passed:	133	chromosome_11_51
+	passed:	134	chromosome_10_137
+	passed:	135	chromosome_14_13
+	passed:	136	chromosome_17_148
+	passed:	137	chromosome_6_107
+	passed:	138	chromosome_1_37
+	passed:	139	chromosome_3_168
+	passed:	140	chromosome_11_37
+	passed:	141	chromosome_13_8
+	passed:	142	chromosome_6_83
+
+	PhaseTank has found 142 PHAS genes!
+
+#Ready to OUTPUT the files:
+
+	OUTPUT_2018.11.27_18.08/Align_2018.11.27_18.08
+	OUTPUT_2018.11.27_18.08/Pred_tab_2018.11.27_18.08
+	OUTPUT_2018.11.27_18.08/PhasiRNA_2018.11.27_18.08
+
+	have been written completely!
+
+##Finished all processes in PhaseTank at 2018.11.27_18:11:36!!
+
+#You can check the output files in directory './OUTPUT_2018.11.27_18.08/'.
+

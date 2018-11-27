@@ -43,7 +43,7 @@ vignettes/*.pdf
 .Rproj.user
 
 # output from PhaseTank_
-OUTPUT*
+PhaseTank_v1.0/OUTPUT*
 Bowtie*
 Mixed*
 
