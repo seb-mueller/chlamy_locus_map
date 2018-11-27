@@ -770,7 +770,7 @@ phaseMatch2 <- function(locAnn, annoDir = "resources") {
   require(rtracklayer)
 
   #Read in output
-  phaseOutput <- read.table(file.path(resourses,"Pred_tab_2018.11.22_10.08"),header=TRUE,stringsAsFactors = FALSE)
+  phaseOutput <- read.table(file.path(resources,"Pred_tab_2018.11.22_10.08"),header=TRUE,stringsAsFactors = FALSE)
   #Build granges file out of table
   #find seqnames
   seqnamessplit <- strsplit(phaseOutput$ID,"_",fixed=TRUE)
