@@ -764,13 +764,13 @@ methylationDiff <- function(locAnn, annoDir = "resources") {
 }
 
 #Phasing process and annotate
-phaseMatch2 <- function(locAnn, annoDir = "resources") {
+phaseMatch2 <- function(locAnn, annoDir = "resources",outputName="Pred_tab_2018.11.27_18.08") {
   #Load in packages
   require(GenomicRanges)
   require(rtracklayer)
 
   #Read in output
-  phaseOutput <- read.table(file.path(resources,"Pred_tab_2018.11.22_10.08"),header=TRUE,stringsAsFactors = FALSE)
+  phaseOutput <- read.table(file.path(annoDir,outputName),header=TRUE,stringsAsFactors = FALSE)
   #Build granges file out of table
   #find seqnames
   seqnamessplit <- strsplit(phaseOutput$ID,"_",fixed=TRUE)

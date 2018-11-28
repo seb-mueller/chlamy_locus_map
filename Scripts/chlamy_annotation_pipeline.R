@@ -105,12 +105,7 @@ table(gr$sizeclass)
 gr <- expressionClass(locAnn = gr, loci = loci, wt = metawt)
 gr <- featureAnn(locAnn = gr, annoDir = annoDir, annoFile = annoFile)
 
-# annotate with counting biases; i.e, is there a higher than average ratio of 21s to 20s, or a higher number of reads starting with As than usual
-gr <- countingBiases(locAnn = gr, cl = cl,
-                     segLocation = segLocation,
-                     wt = metawt,
-                     aDfile = aDfile)
-stopCluster(cl)
+
 
 #Old methylation function - may still be usefull, picks up a lot more methylation
 # gr <-methylation1(gr,annoDir)
@@ -125,7 +120,15 @@ gr <- methylation(gr, annoDir)
 gr <- strainSpec(gr, loci, meta = meta, gitdir = gitdir)
 gr <- lifeCycle(gr, loci, meta = meta, gitdir = gitdir)
 gr <- mutantSpec(gr, loci, meta = meta, gitdir = gitdir)
-# gr <- phaseMatch(gr)
+gr <- phaseMatch2(gr,annoDir=annoDir,outputName="Pred_tab_2018.11.27_18.08")
+
+# annotate with counting biases; i.e, is there a higher than average ratio of 21s to 20s, or a higher number of reads starting with As than usual
+gr <- countingBiases(locAnn = gr, cl = cl,
+                     segLocation = segLocation,
+                     wt = metawt,
+                     aDfile = aDfile)
+stopCluster(cl)
+
 
 #Other functions which were done for arabidopsis
 
