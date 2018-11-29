@@ -674,6 +674,7 @@ featureAnn <- function(locAnn,annoDir = "resources", annoFile = "chlamy_all_anno
     genes = genes,transposons = transposons,repetativeSeq = repetativeSeq,
     rRNA = rRNA,miRNA = miRNA,MSAT = MSAT,mRNA = mRNA,IR = irs,TR = trs,promoter = promoter,
     threeprimeUTR = threeprimeUTR,fiveprimeUTR = fiveprimeUTR,exons = exons,CDS = CDS,introns=introns,
+    TE_Class_DNA, TE_Class_RET,
     TE_L1=TE_L1,TE_Gypsy=TE_Gypsy,TE_Copia=TE_Copia,TE_hAT=TE_hAT,TE_RTE=TE_RTE,
     TE_Novosib=TE_Novosib,TE_DualenRandI=TE_DualenRandI,TE_P=TE_P,TE_Mariner=TE_Mariner,TE_REM1=TE_REM1,
     TE_EnSpm=TE_EnSpm,TE_DIRS=TE_DIRS,TE_TOC2=TE_TOC2,TE_TOC1=TE_TOC1,TE_Gulliver=TE_Gulliver,TE_TCR1=TE_TCR1,
