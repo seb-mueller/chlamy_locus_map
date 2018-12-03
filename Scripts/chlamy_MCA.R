@@ -5,7 +5,7 @@
 #To submit this script to condor
 #		 /scripts/conscriptoR /home/bioinf/nem34/segmentMap_II/chlamy_MCA_8.r -p19
 
-setwd("/home/nem34/segmentMap_II")
+
 library(FactoMineR)
 library(clv)
 library(grid)
@@ -18,19 +18,32 @@ library(pROC)
 library(MASS)
 library(RColorBrewer)
 library(mclust) 
+library(readr)
 
-#source("/home/sm934/code/R/seb_functions.r")
-#TODO where is the correct segmentation stored?
-load("loci7_fdr01_c.rdata")
-load("gr_all_annotations15.rdata")
+#Setup directories
+baseDir <- "/projects/nick_matthews"
+baseDir <- "C:/Users/Nick/Documents/PhD/Proj"
+# Specify location of annotation outputs
+inputLocation <- file.path(baseDir, "segmentation_2018", "LociRun2018_multi200_gap100")
+inputfile <- "gr_fdr0.05_41c2431.RData"
+#set working directory to github repository on cluster
+#gitdir      <- file.path(baseDir, "chlamy_locus_map")
+gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
+
+#Load in loci and gr files
+load(file.path(inputLocation,inputFile))
+
+#Load in list of factors
+factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
 
 ##MCA for categorical data!
 #multivariate methods that allows us to analyze the systematic patterns of variations with categorical data
 #keep in mind that MCA applies to tables in which the observations are described by a set of qualitative (i.e. categorical) variables
 
 # selected factors which will be used to inform the clustering
-#TODO Transposons and phasing
 #TODO decide exactly which annotations are going in main and supplementary factors
+
+
 selFac <- c("sizeclass","predominant_5prime_letter","ratio21vs20Class","expressionClass", 
             "repetitivenessClass","zygotespecific","vegetativespecific",
             "CC125specific","CC1883specific","CC4350specific","DCL3dependent","AGO3dependent",

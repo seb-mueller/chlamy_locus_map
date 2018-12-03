@@ -544,15 +544,16 @@ countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2
 
   ##computing repetetivness for each loci (total reads div by multi match corrected) - use full setof aD not aDnormal
   #TODO check repetativeness calculation - I seem to remember this having some problems in the past
-  matches <- aD@alignments$multireads
-  countswt <- getCounts(segments=locAnn,aD=aD,cl=cl)
-  aD@data <-  aD@data/matches
-
-  countswtnorm <- getCounts(segments=locAnn,aD=aD,cl=cl)
-
-  locAnn$repetitiveness <- 1-(rowSums(countswtnorm)/rowSums(countswt))
-  locAnn$repetitivenessClass <- as.ordered(cut(locAnn$repetitiveness,unique(quantile(locAnn$repetitiveness,probs=seq(0,1,0.25),na.rm=TRUE)),include.lowest=TRUE)) #Added unique function
-  levels(locAnn$repetitivenessClass) <- c("low","median","high","very_high")
+  matches <- aDnormal@alignments$multireads
+  countsnormalwt <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
+  aDnormal@data <-  aDnormal@data/matches
+  
+  countsnormalwtnorm <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
+  
+  locAnn$repetitiveness <- 1-(rowSums(countsnormalwtnorm)/rowSums(countsnormalwt))
+  #locAnn$repetitivenessClass <- as.ordered(cut(locAnn$repetitiveness,quantile(locAnn$repetitiveness,probs=seq(0.25,1,0.25),na.rm=TRUE),include.lowest=TRUE, labels=rev(c("high","median","low"))))
+  
+  locAnn$repetitivenessClass <- classCI(rowSums(countsnormalwt) - rowSums(countsnormalwtnorm), rowSums(countsnormalwtnorm), probs = c(med = 0.3, high = 0.7), comma = 1, main = "Repetitiveness")
   locAnn
 }
 
