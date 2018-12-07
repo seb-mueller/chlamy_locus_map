@@ -19,10 +19,11 @@ library(MASS)
 library(RColorBrewer)
 library(mclust) 
 library(readr)
+library(dplyr)
 
 #Setup directories
 baseDir <- "/projects/nick_matthews"
-baseDir <- "C:/Users/Nick/Documents/PhD/Proj"
+baseDir <- "C:/Users/Nick/Documents/PhD/Projects/Chlamy"
 # Specify location of annotation outputs
 inputLocation <- file.path(baseDir, "segmentation_2018", "LociRun2018_multi200_gap100")
 inputfile <- "gr_fdr0.05_41c2431.RData"
@@ -32,7 +33,7 @@ gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 
 #Load in loci and gr files
 load(file.path(inputLocation,inputFile))
-
+#load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
 #Load in list of factors
 factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
 
@@ -43,15 +44,10 @@ factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
 # selected factors which will be used to inform the clustering
 #TODO decide exactly which annotations are going in main and supplementary factors
 
-
-selFac <- c("sizeclass","predominant_5prime_letter","ratio21vs20Class","expressionClass", 
-            "repetitivenessClass","zygotespecific","vegetativespecific",
-            "CC125specific","CC1883specific","CC4350specific","DCL3dependent","AGO3dependent",
-            "miRNA","CDS","exons","intergenic","IR","TR","promoter","ratio_strand_class",
-            "methCG","methCHH","methCHG") 
+selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% pull(annotation)
 
 # supplementary factors for which association with clusters will be calculated, but which will not inform the clustering
-supFac <- c("fiveprimeUTR","threeprimeUTR","Jspecific","ratioBigvsNormalClass","ratioSmallvsNormalClass")
+supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% pull(annotation)
 
 cF7 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))                                                      
 
