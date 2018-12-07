@@ -132,9 +132,9 @@ intronCalculate <- function(annoDir = "resources") {
       #If intron found, add in relevant information
       introns$source <- paste0("CalculatedFrom:",x$source)
       introns$parent <- x$ID
-      introns$type <- "intron"
-      introns$id <- paste0(x$ID,".intron.",1:length(introns))
-      introns$pacid <- x$pacid
+      introns$type   <- "intron"
+      introns$id     <- paste0(x$ID,".intron.",1:length(introns))
+      introns$pacid  <- x$pacid
     } else {
       #If no introns, just return empty Granges object
       introns = GRanges()
@@ -159,18 +159,18 @@ transposonProcess <- function(annoDir = "resources",gitdir,keepUnknowns=FALSE) {
   transposons <- import.gff3(file.path(annoDir, "Creinhardtii_281_v5.5.repeatmasked_assembly_v5.0.gff3"))
   referenceFile <- read.csv(file.path(gitdir,"transposon_classification_scheme.csv"),header=TRUE, stringsAsFactors = FALSE)
   #Set up empty columns
-  transposons$name <- rep("Unknown", length(transposons))
-  transposons$class <- rep("Unknown", length(transposons))
-  transposons$order <- rep("Unknown", length(transposons))
+  transposons$name        <- rep("Unknown", length(transposons))
+  transposons$class       <- rep("Unknown", length(transposons))
+  transposons$order       <- rep("Unknown", length(transposons))
   transposons$superfamily <- rep("Unknown", length(transposons))
   #Run loop through each row and assign order
   for(ii in 1:nrow(referenceFile)) {
     #Find matches for the search terms
     tempSearch <- grep(referenceFile$SearchTerm[ii],transposons$Name, ignore.case = TRUE)
     #Assign corresponding values
-    transposons$name[tempSearch] <- referenceFile$Name[ii]
-    transposons$class[tempSearch] <- referenceFile$Class[ii]
-    transposons$order[tempSearch] <- referenceFile$Order[ii]
+    transposons$name[tempSearch]        <- referenceFile$Name[ii]
+    transposons$class[tempSearch]       <- referenceFile$Class[ii]
+    transposons$order[tempSearch]       <- referenceFile$Order[ii]
     transposons$superfamily[tempSearch] <- referenceFile$Superfamily[ii]
   }
   #Extract all sequences as repetative sequences
@@ -494,10 +494,10 @@ countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2
   #TODO generate plots and choose appropriate probs values for sRNA length biases
 
   #Assign counts to locAnn
-  locAnn$counts20 <- rowSums(counts20wt)
-  locAnn$counts21 <- rowSums(counts21wt)
-  locAnn$countsSmall <- rowSums(countsSmallwt)
-  locAnn$countsBig <- rowSums(countsBigwt)
+  locAnn$counts20     <- rowSums(counts20wt)
+  locAnn$counts21     <- rowSums(counts21wt)
+  locAnn$countsSmall  <- rowSums(countsSmallwt)
+  locAnn$countsBig    <- rowSums(countsBigwt)
   locAnn$countsNormal <- rowSums(countsnormwt)
 
   #For 21 vs 20 ratio
@@ -523,16 +523,16 @@ countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2
   #Calculate strand biases - phased loci should be strongly biased
   #TODO generate plots and choose appropriate probs values for strand biases
   # as above, but now looking at strand biases (i.e., whether most of the sRNAs are on the same strand, or evenly split across strands)
-  countsminus <- getCounts(segments=locAnn,aD=aDnormal[strand(aDnormal@alignments)=="-",],cl=cl)
-  countsplus <- getCounts(segments=locAnn,aD=aDnormal[strand(aDnormal@alignments)=="+",],cl=cl)
-  countsall <- getCounts(segments=locAnn,aD=aDnormal, cl=cl)
-  countsallwt <- countsall[,wt]
+  countsminus   <- getCounts(segments=locAnn,aD=aDnormal[strand(aDnormal@alignments)=="-",],cl=cl)
+  countsplus    <- getCounts(segments=locAnn,aD=aDnormal[strand(aDnormal@alignments)=="+",],cl=cl)
+  countsall     <- getCounts(segments=locAnn,aD=aDnormal, cl=cl)
+  countsallwt   <- countsall[,wt]
   countsminuswt <- countsminus[,wt]
-  countspluswt <- countsplus[,wt]
+  countspluswt  <- countsplus[,wt]
 
   #strand bias
-  locAnn$countsminus <- rowSums(countsminuswt)
-  locAnn$countsplus <- rowSums(countspluswt)
+  locAnn$countsminus  <- rowSums(countsminuswt)
+  locAnn$countsplus   <- rowSums(countspluswt)
   locAnn$ratio_strand <- log2((rowSums(countsminuswt))/(rowSums(countspluswt)))
   locAnn$ratio_strand[(locAnn$countsminus+locAnn$countsplus)<=5] <- NaN
   locAnn$ratio_strand_abs <- abs(locAnn$ratio_strand)
@@ -544,12 +544,12 @@ countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2
 
   ##computing repetetivness for each loci (total reads div by multi match corrected) - use full setof aD not aDnormal
   #TODO check repetativeness calculation - I seem to remember this having some problems in the past
-  matches <- aDnormal@alignments$multireads
-  countsnormalwt <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
-  aDnormal@data <-  aDnormal@data/matches
-  
-  countsnormalwtnorm <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
-  
+  matches               <- aDnormal@alignments$multireads
+  countsnormalwt        <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
+  aDnormal@data         <- aDnormal@data/matches
+
+  countsnormalwtnorm    <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
+
   locAnn$repetitiveness <- 1-(rowSums(countsnormalwtnorm)/rowSums(countsnormalwt))
   #locAnn$repetitivenessClass <- as.ordered(cut(locAnn$repetitiveness,quantile(locAnn$repetitiveness,probs=seq(0.25,1,0.25),na.rm=TRUE),include.lowest=TRUE, labels=rev(c("high","median","low"))))
   
@@ -661,26 +661,13 @@ phaseMatch <- function(locAnn,phasingDir = "phasing") {
 
 #This function loads in the annotation data and computes overlaps with given locAnn object
 #There is a default location for the annotation files but can also be user specified
-featureAnn <- function(locAnn,annoDir = "resources", annoFile = "chlamy_all_annotations.Rdata") {
+featureAnn <- function(locAnn, annotations) {
   #Require packages
   require(rtracklayer)
   require(GenomicRanges)
-
-  #load in annotations
-  load(file.path(annoDir, annoFile))
+  attach(annotations)
 
   #Compute all simple annotations
-  #First create list of annotations to apply
-  annotations <- list(
-    genes = genes,transposons = transposons,repetativeSeq = repetativeSeq,
-    rRNA = rRNA,miRNA = miRNA,MSAT = MSAT,mRNA = mRNA,IR = irs,TR = trs,promoter = promoter,
-    threeprimeUTR = threeprimeUTR,fiveprimeUTR = fiveprimeUTR,exons = exons,CDS = CDS,introns=introns,
-    TE_Class_DNA, TE_Class_RET,
-    TE_L1=TE_L1,TE_Gypsy=TE_Gypsy,TE_Copia=TE_Copia,TE_hAT=TE_hAT,TE_RTE=TE_RTE,
-    TE_Novosib=TE_Novosib,TE_DualenRandI=TE_DualenRandI,TE_P=TE_P,TE_Mariner=TE_Mariner,TE_REM1=TE_REM1,
-    TE_EnSpm=TE_EnSpm,TE_DIRS=TE_DIRS,TE_TOC2=TE_TOC2,TE_TOC1=TE_TOC1,TE_Gulliver=TE_Gulliver,TE_TCR1=TE_TCR1,
-    TE_Harbinger=TE_Harbinger
-  )
   #Then compute annotations
   locAnn <- computeOverlaps(locAnn,annotations)
 
