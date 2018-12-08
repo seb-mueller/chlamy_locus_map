@@ -69,6 +69,9 @@ compileAnnotations <- function(annoDir = "resources", annoFile) {
 #Takes locAnn object and list of 1 or more annotation files, computes overlap and assigns either TRUE/FALSE or named annotation
 computeOverlaps <- function(locAnn,annotations,assignNames = FALSE,  namesColumn = "type") {
   #annotations <- list(annotations)
+  if(!is.list(annotations)|is.null(names(annotations))) {
+    stop("Requires list input with name of annotation")
+  }
   for(annotName in names(annotations)) {
     annotation <- annotations[[annotName]]
     #Ensure sequence levels are equivalent - stops warnings for scaffolds
