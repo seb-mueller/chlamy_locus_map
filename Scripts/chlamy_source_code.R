@@ -426,6 +426,9 @@ expressionClass <- function(locAnn, loci, wt) {
 #TODO generate plots and choose appropriate probs values for strand biases
 #TODO edit firs base function so it only identifies first base
 #TODO check repetativeness calculation - I seem to remember this having some problems in the past
+processingBiases <- function(locAnn, saveLocation) {
+}
+
 countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2018", aDfile,wt) {
 
   #Firstly load in raw alignment data
@@ -506,22 +509,18 @@ countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2
   #For 21 vs 20 ratio
   locAnn$ratio21vs20 <- log2((rowSums(counts21wt))/(rowSums(counts20wt)))
   locAnn$ratio21vs20[(locAnn$counts20+locAnn$counts21)<=5] <- NaN
-  locAnn$ratio21vs20Class <- classCI(locAnn$counts21, locAnn$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
 
   #For 20 vs 21 ratio
   locAnn$ratio20vs21 <- log2((rowSums(counts20wt))/(rowSums(counts21wt)))
   locAnn$ratio20vs21[(locAnn$counts20+locAnn$counts21)<=5] <- NaN
-  locAnn$ratio20vs21Class <- classCI(locAnn$counts20, locAnn$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")
 
   #For small RNAs vs Normal RNAs
   locAnn$ratioSmallvsNormal <- log2((rowSums(countsSmallwt))/(rowSums(countsnormwt)))
   locAnn$ratioSmallvsNormal[(locAnn$countsSmall+locAnn$countsNormal)<=5] <- NaN
-  locAnn$ratioSmallvsNormalClass <- classCI(locAnn$countsSmall, locAnn$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="SmallvsNormal_0.3_0.7.pdf")
 
   #For big RNAs vs Normal RNAs
   locAnn$ratioBigvsNormal <- log2((rowSums(countsBigwt))/(rowSums(countsnormwt)))
   locAnn$ratioBigvsNormal[(locAnn$countsBig+locAnn$countsNormal)<=5] <- NaN
-  locAnn$ratioBigvsNormalClass <- classCI(locAnn$countsBig, locAnn$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="BigvsNormal_0.3_0.7.pdf")
 
   #Calculate strand biases - phased loci should be strongly biased
   #TODO generate plots and choose appropriate probs values for strand biases
@@ -533,30 +532,29 @@ countingBiases <- function(locAnn, cl, samplefile, segLocation = "segmentation_2
   countsminuswt <- countsminus[,wt]
   countspluswt  <- countsplus[,wt]
 
+  locAnn$countsall    <- rowSums(countsall)
   #strand bias
+  locAnn$countsallwt  <- rowSums(countsallwt)
   locAnn$countsminus  <- rowSums(countsminuswt)
   locAnn$countsplus   <- rowSums(countspluswt)
   locAnn$ratio_strand <- log2((rowSums(countsminuswt))/(rowSums(countspluswt)))
   locAnn$ratio_strand[(locAnn$countsminus+locAnn$countsplus)<=5] <- NaN
   locAnn$ratio_strand_abs <- abs(locAnn$ratio_strand)
 
-  # confidence intervals on strands, as before
-  locAnn$ratio_strand_class <- classCI(locAnn$countsplus, locAnn$countsminus,
-                                       probs = c(0.1,0.35,0.65,0.9), comma = 1,plotname="plusvsminus2.pdf") #changed probs to 0.1 and 0.9 rather than 0.2 and 0.8
-  levels(locAnn$ratio_strand_class) <- c("strong bias", "med bias", "no bias", "med bias", "strong bias")
 
   ##computing repetetivness for each loci (total reads div by multi match corrected) - use full setof aD not aDnormal
   #TODO check repetativeness calculation - I seem to remember this having some problems in the past
   matches               <- aDnormal@alignments$multireads
-  countsnormalwt        <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
+  # countsnormalwt        <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
+# # == countsallwt??
   aDnormal@data         <- aDnormal@data/matches
 
   countsnormalwtnorm    <- getCounts(segments=locAnn,aD=aDnormal[,wt],cl=cl)
+  locAnn$countsnormalwtnorm <- rowSums(countsnormalwtnorm)
 
-  locAnn$repetitiveness <- 1-(rowSums(countsnormalwtnorm)/rowSums(countsnormalwt))
+  locAnn$repetitiveness <- 1-(rowSums(countsnormalwtnorm)/rowSums(countsallwt))
   #locAnn$repetitivenessClass <- as.ordered(cut(locAnn$repetitiveness,quantile(locAnn$repetitiveness,probs=seq(0.25,1,0.25),na.rm=TRUE),include.lowest=TRUE, labels=rev(c("high","median","low"))))
   
-  locAnn$repetitivenessClass <- classCI(rowSums(countsnormalwt) - rowSums(countsnormalwtnorm), rowSums(countsnormalwtnorm), probs = c(med = 0.3, high = 0.7), comma = 1, main = "Repetitiveness")
   locAnn
 }
 
