@@ -13,7 +13,7 @@ library(MASS)
 library(RColorBrewer)
 # library(mclust)
 library(baySeq)
-library(MKmisc)
+library(MKmisc) #binomCI, binomial confidence interval
 library(readr)
 library(dplyr)
 # library(simpleboot)
@@ -22,17 +22,16 @@ library(dplyr)
 
 fdr <- 0.05
 baseDir <- "/projects/nick_matthews"
-baseDir <- "/home/sm934/workspace/chlamy"
+# baseDir <- "/home/sm934/workspace/chlamy"
 # Specify location of segmentation
 segLocation <- file.path(baseDir, "segmentation_2018")
 annoDir     <- file.path(baseDir, "resources")
-annoFile <- "chlamy_all_annotations.Rdata"
+annoFile    <- "chlamy_all_annotations.Rdata"
 #set working directory to github repository on cluster
-gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
-meta <- read_csv(file.path(gitdir, "Summary_of_Data.csv")) %>%
-    filter(InCurrentLociRun == "Yes")
-#TODO we need to check definition of WTs
-metawt <- meta$Controls %in% c("wt")
+gitdir  <- file.path(baseDir, "chlamy_locus_map_github")
+meta    <- read_csv(file.path(gitdir, "Summary_of_Data.csv")) %>%
+  filter(InCurrentLociRun == "Yes")
+metawt <- meta$Controls %in% c("wt") # only WT libs
 
 source(file.path(gitdir, "Scripts/chlamy_source_code.R"))
 

@@ -3,6 +3,7 @@
 #Date: 06/07/18
 
 library(segmentSeq)
+library(stringr)
 #Specify location of the segmentation
 #setwd("C:/Users/Nick/Documents/Uni Work/Third Year/Project/chlamy_locus_map")
 #Specify location of segmentation
