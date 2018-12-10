@@ -44,7 +44,7 @@ aDfile    <- "aD_chlamy_segmentation_LociRun2018_multi200_gap100.RData"
 # using instead of arbitray versions
 # e.g. "1f6085a"
 gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
-gitfingerprint <- "8ab6f64"
+# gitfingerprint <- "8ab6f64"
 prefix <- str_replace(inputdata, "segD_chlamy_segmentation_(.*).RData", "\\1")
 # [1] "LociRun2018_multi200_gap100"
 saveLocation <- file.path(segLocation, paste(prefix, gitfingerprint, sep = "_"))
@@ -149,24 +149,30 @@ gr <- countingBiases(locAnn = gr, cl = cl,
                      segLocation = segLocation,
                      wt = metawt,
                      aDfile = aDfile)
+stopCluster(cl)
+save(gr, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
+# load(file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 
 # classing continues features using thresholds obtained by inspections
   #For 21 vs 20 ratio
-  locAnn$ratio21vs20Class <- classCI(locAnn$counts21, locAnn$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
+  gr$ratio21vs20Class <- classCI(gr$counts21, gr$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
   #For 20 vs 21 ratio
-  locAnn$ratio20vs21Class <- classCI(locAnn$counts20, locAnn$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")
+  gr$ratio20vs21Class <- classCI(gr$counts20, gr$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")
   #For small RNAs vs Normal RNAs
-  locAnn$ratioSmallvsNormalClass <- classCI(locAnn$countsSmall, locAnn$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="SmallvsNormal_0.3_0.7.pdf")
+  gr$ratioSmallvsNormalClass <- classCI(gr$countsSmall, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="SmallvsNormal_0.3_0.7.pdf")
   #For big RNAs vs Normal RNAs
-  locAnn$ratioBigvsNormalClass <- classCI(locAnn$countsBig, locAnn$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="BigvsNormal_0.3_0.7.pdf")
+  gr$ratioBigvsNormalClass <- classCI(gr$countsBig, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="BigvsNormal_0.3_0.7.pdf")
   # confidence intervals on strands, as before
-  locAnn$ratio_strand_class <- classCI(locAnn$countsplus, locAnn$countsminus,
+  gr$ratio_strand_class <- classCI(gr$countsplus, gr$countsminus,
                                        probs = c(0.1,0.35,0.65,0.9), comma = 1,plotname="plusvsminus2.pdf") #changed probs to 0.1 and 0.9 rather than 0.2 and 0.8
-  levels(locAnn$ratio_strand_class) <- c("strong bias", "med bias", "no bias", "med bias", "strong bias")
+  levels(gr$ratio_strand_class) <- c("strong bias", "med bias", "no bias", "med bias", "strong bias")
 
-  locAnn$repetitivenessClass <- classCI(rowSums(countsnormalwt) - rowSums(countsnormalwtnorm), rowSums(countsnormalwtnorm), probs = c(med = 0.3, high = 0.7), comma = 1, main = "Repetitiveness")
+# we can't use classCI in my opinion since it is based on binomial 
+# countsallwt: WT reads
+# countsnormalwtnorm: WT normalized reads (corrected for multi read count)  
+# the ratio between the constitutes repetitiveness!
+  gr$repetitivenessClass <- classCI(gr$countsallwt, gr$countsnormalwtnorm, probs = c(med = 0.3, high = 0.7), comma = 1, plotname = "Repetitiveness.pdf")
 
-stopCluster(cl)
 
 
 #Other functions which were done for arabidopsis
@@ -188,5 +194,3 @@ export.gff3(gr, con = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".
 
 write.csv(as.data.frame(gr), file = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".csv")))
 #Save file
-save(gr, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
-load(file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
