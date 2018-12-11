@@ -16,6 +16,7 @@ library(baySeq)
 library(MKmisc) #binomCI, binomial confidence interval
 library(readr)
 library(dplyr)
+library(purrr)
 # library(simpleboot)
 
 ###### setting variables
@@ -44,7 +45,7 @@ aDfile    <- "aD_chlamy_segmentation_LociRun2018_multi200_gap100.RData"
 # using instead of arbitray versions
 # e.g. "1f6085a"
 gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
-# gitfingerprint <- "8ab6f64"
+# gitfingerprint <- "9dd50d8"
 prefix <- str_replace(inputdata, "segD_chlamy_segmentation_(.*).RData", "\\1")
 # [1] "LociRun2018_multi200_gap100"
 saveLocation <- file.path(segLocation, paste(prefix, gitfingerprint, sep = "_"))
@@ -103,27 +104,23 @@ if(!file.exists(myfile)) {
 # attach annotenv so objects are accesible
 attach(annotenv)
 ls(annotenv)
-#  [1] "anno"           "CDS"            "exons"          "fiveprimeUTR"  
-#  [5] "genes"          "introns"        "irs"            "miRNA"         
-#  [9] "mRNA"           "MSAT"           "promoter"       "repetativeSeq" 
-# [13] "rRNA"           "TE_Class_DNA"   "TE_Class_RET"   "TE_Copia"      
-# [17] "TE_DIRS"        "TE_DualenRandI" "TE_EnSpm"       "TE_Gulliver"   
-# [21] "TE_Gypsy"       "TE_Harbinger"   "TE_hAT"         "TE_L1"         
-# [25] "TE_Mariner"     "TE_Novosib"     "TE_Order_DIRS"  "TE_Order_LINE" 
-# [29] "TE_Order_LTR"   "TE_Order_SINE"  "TE_Order_TIR"   "TE_P"          
-# [33] "TE_REM1"        "TE_RTE"         "TE_TCR1"        "TE_TOC1"       
-# [37] "TE_TOC2"        "TE_Undefined"   "threeprimeUTR"  "transposons"   
-# [41] "trs"           
+#  [1] "anno"           "CDS"            "exons"          "fiveprimeUTR"
+#  [5] "genes"          "introns"        "irs"            "miRNA"
+#  [9] "mRNA"           "MSAT"           "promoter"       "repetativeSeq"
+# [13] "rRNA"           "TE_Class_DNA"   "TE_Class_RET"   "TE_Copia"
+# [17] "TE_DIRS"        "TE_DualenRandI" "TE_EnSpm"       "TE_Gulliver"
+# [21] "TE_Gypsy"       "TE_Harbinger"   "TE_hAT"         "TE_L1"
+# [25] "TE_Mariner"     "TE_Novosib"     "TE_Order_DIRS"  "TE_Order_LINE"
+# [29] "TE_Order_LTR"   "TE_Order_SINE"  "TE_Order_TIR"   "TE_P"
+# [33] "TE_REM1"        "TE_RTE"         "TE_TCR1"        "TE_TOC1"
+# [37] "TE_TOC2"        "TE_Undefined"   "threeprimeUTR"  "transposons"
+# [41] "trs"
 
 #####the next set of functions take the annotated locus object 'gr' and add some more annotation data#####
 #The functions are found 'chlamy_source_code.R'
 
 # annotate by size class
 gr <- sizeClass(gr, intervals = c(0,100,400,1500,3000,Inf))
-table(gr$sizeclass)
-#
-#      (0,100]     (100,400]    (400,1500] (1500,3e+03] (3e+03,Inf]
-#          272          2113          3109         552         118
 
 # annotate with overlapping features
 gr <- expressionClass(locAnn = gr, loci = loci, wt = metawt)
@@ -133,7 +130,7 @@ gr <- featureAnn(locAnn = gr, annotations = annotenv)
 
 #New methylation functions
 # gr <- methylation2(gr,annoDir)
-gr <- methylation(gr, annoDir)
+# gr <- methylation(gr, annoDir)
 #gr <- methylationDiff(gr,annoDir) #Almost no results - very small datasets
 #gr <- methylationDiff(grannoDir) #Almost no results - very small datasets
 
@@ -150,41 +147,44 @@ gr <- countingBiases(locAnn = gr, cl = cl,
                      wt = metawt,
                      aDfile = aDfile)
 stopCluster(cl)
-save(gr, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 # load(file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 
 # what is the dominating size class?
 
-sizedf <- data.frame("smaller_20bp" = gr$countsSmall,
-                "equal_20bp"  = gr$counts20,
-                "equal_21bp"  = gr$counts21,
-                "larger_21bp" = gr$countsBig)
+sizedf <- data.frame( "smaller_20bp" = gr$countsSmall,
+                      "equal_20bp"   = gr$counts20,
+                      "equal_21bp"   = gr$counts21,
+                      "larger_21bp"  = gr$countsBig)
 
-tmp <- sizedf %>%
-  rowwise() %>%
-  mutate(sizeClass = dim(.[,1:4]))
+# determine index of each row with the max number of sRNAs
+idx <- sizedf %>%
+  pmap_int(function(...) which.max(c(...)))
+gr$predominant_sRNA_sizeClass <- colnames(sizedf)[idx]
+# breakdown of how many loci have a specif prevailing sRNA mapping to it:
 
 # classing continues features using thresholds obtained by inspections
   #For 21 vs 20 ratio
-  gr$ratio21vs20Class <- classCI(gr$counts21, gr$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
+  # gr$ratio21vs20Class <- classCI(gr$counts21, gr$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
   #For 20 vs 21 ratio
-  gr$ratio20vs21Class <- classCI(gr$counts20, gr$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")
+  # gr$ratio20vs21Class <- classCI(gr$counts20, gr$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")
   #For small RNAs vs Normal RNAs
-  gr$ratioSmallvsNormalClass <- classCI(gr$countsSmall, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="SmallvsNormal_0.3_0.7.pdf")
+  # gr$ratioSmallvsNormalClass <- classCI(gr$countsSmall, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="SmallvsNormal_0.3_0.7.pdf")
   #For big RNAs vs Normal RNAs
-  gr$ratioBigvsNormalClass <- classCI(gr$countsBig, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="BigvsNormal_0.3_0.7.pdf")
+  # gr$ratioBigvsNormalClass <- classCI(gr$countsBig, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="BigvsNormal_0.3_0.7.pdf")
   # confidence intervals on strands, as before
-  gr$ratio_strand_class <- classCI(gr$countsplus, gr$countsminus,
-                                       probs = c(0.1,0.35,0.65,0.9), comma = 1,plotname="plusvsminus2.pdf") #changed probs to 0.1 and 0.9 rather than 0.2 and 0.8
-  levels(gr$ratio_strand_class) <- c("strong bias", "med bias", "no bias", "med bias", "strong bias")
 
-# we can't use classCI in my opinion since it is based on binomial 
+gr$ratio_strand_class <- classCI(gr$countsplus, gr$countsminus,
+                                 probs = c(0.2,0.4,0.6,0.8), comma = 1,
+                                 plotname=file.path(saveLocation, paste0("standbias_", prefix, ".pdf")))
+levels(gr$ratio_strand_class) <- c("strong_bias", "med_bias", "no_bias", "med_bias", "strong_bias")
+
+# we can't use classCI in my opinion since it is based on binomial
 # countsallwt: WT reads
-# countsnormalwtnorm: WT normalized reads (corrected for multi read count)  
+# countsnormalwtnorm: WT normalized reads (corrected for multi read count)
 # the ratio between the constitutes repetitiveness!
-  gr$repetitivenessClass <- classCI(gr$countsallwt, gr$countsnormalwtnorm, probs = c(med = 0.3, high = 0.7), comma = 1, plotname = "Repetitiveness.pdf")
-
-
+gr$repetitivenessClass <- classCI(gr$countsallwt, gr$countsnormalwtnorm,
+                                  probs = c(med = 0.6, high = 0.9), comma = 1,
+                                  plotname=file.path(saveLocation, paste0("Repetitiveness_", prefix, ".pdf")))
 
 #Other functions which were done for arabidopsis
 
@@ -199,9 +199,57 @@ tmp <- sizedf %>%
 #stopCluster(cl)
 #gr <- annPol(gr)
 
+save(gr, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 # export as gff3 file for viewing in browser
 export.gff3(gr, con = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".gff")))
 #Write csv for phasing
 
 write.csv(as.data.frame(gr), file = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".csv")))
 #Save file
+
+
+#------------------------------------ examining individual features
+table(gr$sizeclass)
+#
+#      (0,100]     (100,400]    (400,1500] (1500,3e+03] (3e+03,Inf]
+#          272          2113          3109         552         118
+table(gr$predominant_sRNA_sizeClass)
+#   equal_20bp   equal_21bp  larger_21bp smaller_20bp
+#          415         3302         1080         1367
+table(gr$ratio_strand_class)
+# strong_bias    med_bias     no_bias
+#        2536        2182         829
+table(gr$repetitivenessClass)
+#
+#  low  med high
+#  518 1777 3477
+
+#------------------------------------ interessing associations
+
+table(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass)
+ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass)))
+#                low  med high  Sum
+#                                  
+# equal_20bp      12   98  298  408
+# equal_21bp     139  780 2368 3287
+# larger_21bp    261  441  340 1042
+# smaller_20bp   106  458  471 1035
+# Sum            518 1777 3477 5772
+# -> 20/21 are very Repetitive, but smalle/bigger not
+chisq.test(table(gr$predominant_sRNA_sizeClass, gr$predominant_5prime_letter))
+ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$sizeclass)))
+#               (0,100] (100,400] (400,1.5e+03] (1.5e+03,3e+03] (3e+03,Inf]  Sum
+#
+# equal_20bp         28       187           186              13           1  415
+# equal_21bp        144      1106          1606             349          97 3302
+# larger_21bp        30       358           565             117          10 1080
+# smaller_20bp       70       462           752              73          10 1367
+# Sum               272      2113          3109             552         118 6164
+ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$predominant_5prime_letter)))
+#                  A   AC  ACG   AG   AT    C   CG  CGT   CT    G   GT    T  Sum
+# equal_20bp      10    2    0    2    3   40    1    0   10  132   18  191  409
+# equal_21bp     204   11    0   23  146  125   47   15  114   53  113 2347 3198
+# larger_21bp    100   15    5   36   13   99  168    1   19  211   32  216  915
+# smaller_20bp   113   17    3   31    3  124  201    1   21  172   24  220  930
+# Sum            427   45    8   92  165  388  417   17  164  568  187 2974 5452
+# -> most 21bp start with T (no G!), 20bp start T or G
