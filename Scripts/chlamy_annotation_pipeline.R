@@ -153,6 +153,17 @@ stopCluster(cl)
 save(gr, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 # load(file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 
+# what is the dominating size class?
+
+sizedf <- data.frame("smaller_20bp" = gr$countsSmall,
+                "equal_20bp"  = gr$counts20,
+                "equal_21bp"  = gr$counts21,
+                "larger_21bp" = gr$countsBig)
+
+tmp <- sizedf %>%
+  rowwise() %>%
+  mutate(sizeClass = dim(.[,1:4]))
+
 # classing continues features using thresholds obtained by inspections
   #For 21 vs 20 ratio
   gr$ratio21vs20Class <- classCI(gr$counts21, gr$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
