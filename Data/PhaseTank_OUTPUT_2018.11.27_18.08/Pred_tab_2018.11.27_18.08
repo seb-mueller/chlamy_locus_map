@@ -1,4 +1,4 @@
-#NO	ID	Beg:End	Length	Phased_Ratio	Phased_Abundance	Phased_Number	Phased_Score
+NO	ID	Beg:End	Length	Phased_Ratio	Phased_Abundance	Phased_Number	Phased_Score
 1	chromosome_13_113	4823116:4823675	560	0.846	354494	29	313.572
 2	chromosome_11_37	1337276:1337667	392	0.817	139189	18	174.245
 3	chromosome_11_51	2205605:2205996	392	0.817	139189	18	174.245

@@ -69,8 +69,8 @@ compileAnnotations <- function(annoDir = "resources", annoFile) {
 #Takes locAnn object and list of 1 or more annotation files, computes overlap and assigns either TRUE/FALSE or named annotation
 computeOverlaps <- function(locAnn,annotations,assignNames = FALSE,  namesColumn = "type") {
   #annotations <- list(annotations)
-  if(!is.environment(annotations) | is.null(names(annotations))) {
-    stop("Requires environment input with name of annotation")
+  if(!(is.environment(annotations) | is.list(annotations)) | is.null(names(annotations))) {
+    stop("Requires list or environment input with name of annotation")
   }
   for(annotName in names(annotations)) {
     annotation <- annotations[[annotName]]
@@ -773,27 +773,33 @@ phaseMatch2 <- function(locAnn, annoDir = "resources",outputName="Pred_tab_2018.
                     length=phaseOutput$Length,phasedRatio=phaseOutput$Phased_Ratio,phasedAbundance=phaseOutput$Phased_Abundance,
                     phasedNumber=phaseOutput$Phased_Number,phasedScore=phaseOutput$Phased_Score)
   
+  # exporting to inspect in genome browser
+  export.gff3(phased, con = file.path(annoDir, paste0(outputName, ".gff")))
   #Compute matches
   locAnn <- computeOverlaps(locAnn,list(phased=phased))
   overlaps <- findOverlaps(locAnn,phased)
+  qHits <- queryHits(overlaps)
+  sHits <- subjectHits(overlaps)
   #Default phaseScore is 0 (i.e. no phasing)
   locAnn$phaseScore <- rep(0,length(locAnn))
   #Assign phase scored where only one phased locus is present
-  locAnn$phaseScore[queryHits(overlaps)[table(queryHits(overlaps))==1]] <- phased$phasedScore[subjectHits(overlaps)[table(queryHits(overlaps))==1]]
+  locAnn$phaseScore[qHits[table(qHits)==1]] <- phased$phasedScore[sHits[table(qHits)==1]]
   #For areas with more than one phased locus, assign the average phasing score 
-  for(index in as.numeric(names(which(table(queryHits(overlaps))>1)))) {
-    subjectHits(overlaps) == index
-    locAnn$phaseScore[index] <- mean(phased$phasedScore[subjectHits(overlaps)[queryHits(overlaps) == index]])
+  for(index in as.numeric(names(which(table(qHits)>1)))) {
+    sHits == index
+    locAnn$phaseScore[index] <- mean(phased$phasedScore[sHits[qHits == index]])
   }
   #Establish phaseClass field, default is "none"
-  locAnn$phaseClass <- factor(rep("none",length(locAnn)),levels=c("low","median","high","very_high","none"))
+  # setting parameters on chlamy_annotation_pipeline.R!
   #Cut values into discrete quartiles
-  tempClass <- as.ordered(cut(locAnn$phaseScore[queryHits(overlaps)],
-                              unique(quantile(locAnn$phaseScore[queryHits(overlaps)],probs=seq(0,1,0.25),na.rm=TRUE)),include.lowest=TRUE))
+  # tempClass <- as.ordered(cut(locAnn$phaseScore[qHits],
+  #                             unique(quantile(locAnn$phaseScore[qHits],
+  #                                             probs=seq(0,1,0.25),na.rm=TRUE)),include.lowest=TRUE))
+# 
   #Assign levels to classification
-  levels(tempClass) <- c("low","median","high","very_high","none")
+  # levels(tempClass) <- c("low","median","high","very_high","none")
   #Add classifications to phaseClass field
-  locAnn$phaseClass[queryHits(overlaps)] <- tempClass
+  # locAnn$phaseClass[qHits] <- tempClass
   
   #Return locAnn
   locAnn

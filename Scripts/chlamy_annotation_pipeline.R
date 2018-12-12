@@ -22,6 +22,7 @@ library(purrr)
 ###### setting variables
 
 fdr <- 0.05
+
 baseDir <- "/projects/nick_matthews"
 # baseDir <- "/home/sm934/workspace/chlamy"
 # Specify location of segmentation
@@ -30,6 +31,7 @@ annoDir     <- file.path(baseDir, "resources")
 annoFile    <- "chlamy_all_annotations.Rdata"
 #set working directory to github repository on cluster
 gitdir  <- file.path(baseDir, "chlamy_locus_map_github")
+
 meta    <- read_csv(file.path(gitdir, "Summary_of_Data.csv")) %>%
   filter(InCurrentLociRun == "Yes")
 metawt <- meta$Controls %in% c("wt") # only WT libs
@@ -52,8 +54,6 @@ saveLocation <- file.path(segLocation, paste(prefix, gitfingerprint, sep = "_"))
 dir.create(saveLocation)
 
 
-cl <- makeCluster(24)
-
 #####Load in and process segmentation, selecting significant loci#####
 # load(file.path(segLocation,"segD_first_chlamy_segmentation_nick.RData"))
 # loads segD object (lociData class)
@@ -75,9 +75,6 @@ attr(gr, "parameter") <- prefix
 attr(gr, "git") <- gitfingerprint
 # name the loci 'CR' - chlamydomonas reinhardtii, 'SL' - srna locus
 names(gr) <- sprintf("CRSL%05.f0", 1:length(gr))
-
-#load("gr_just_cb.RData") #load gr you want to add to it...
-
 
 #####These next few functions compute and compile annotation files, this shouldn't need runnding every time#####
 #Compute introns - this takes a while, don't run unless necessary
@@ -138,10 +135,17 @@ gr <- featureAnn(locAnn = gr, annotations = annotenv)
 gr <- strainSpec(gr, loci, meta = meta, gitdir = gitdir)
 gr <- lifeCycle(gr, loci, meta = meta, gitdir = gitdir)
 gr <- mutantSpec(gr, loci, meta = meta, gitdir = gitdir)
-# TODO: PhaseTank
-# gr <- phaseMatch2(gr,annoDir=annoDir,outputName="Pred_tab_2018.11.27_18.08")
+
+# PhaseTank
+gr <- phaseMatch2(gr,annoDir=file.path(gitdir, "Data/PhaseTank_OUTPUT_2018.11.27_18.08"),outputName="Pred_tab_2018.11.27_18.08")
+pdf(file.path(saveLocation, paste0("phasing_density", prefix, ".pdf")))
+plot(density((gr$phaseScore[gr$phaseScore>0])))
+dev.off()
+# I'd split into 0,[0,60),60+ (see below)
+
 
 # annotate with counting biases; i.e, is there a higher than average ratio of 21s to 20s, or a higher number of reads starting with As than usual
+cl <- makeCluster(24)
 gr <- countingBiases(locAnn = gr, cl = cl,
                      segLocation = segLocation,
                      wt = metawt,
@@ -162,23 +166,11 @@ idx <- sizedf %>%
 gr$predominant_sRNA_sizeClass <- colnames(sizedf)[idx]
 # breakdown of how many loci have a specif prevailing sRNA mapping to it:
 
-# classing continues features using thresholds obtained by inspections
-  #For 21 vs 20 ratio
-  # gr$ratio21vs20Class <- classCI(gr$counts21, gr$counts20, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="21vs20_0.3_0.7.pdf")
-  #For 20 vs 21 ratio
-  # gr$ratio20vs21Class <- classCI(gr$counts20, gr$counts21, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="20vs21_0.3_0.7.pdf")
-  #For small RNAs vs Normal RNAs
-  # gr$ratioSmallvsNormalClass <- classCI(gr$countsSmall, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="SmallvsNormal_0.3_0.7.pdf")
-  #For big RNAs vs Normal RNAs
-  # gr$ratioBigvsNormalClass <- classCI(gr$countsBig, gr$countsNormal, probs = c(med = 0.3, high = 0.7), comma = 2,plotname="BigvsNormal_0.3_0.7.pdf")
-  # confidence intervals on strands, as before
-
 gr$ratio_strand_class <- classCI(gr$countsplus, gr$countsminus,
                                  probs = c(0.2,0.4,0.6,0.8), comma = 1,
                                  plotname=file.path(saveLocation, paste0("standbias_", prefix, ".pdf")))
 levels(gr$ratio_strand_class) <- c("strong_bias", "med_bias", "no_bias", "med_bias", "strong_bias")
 
-# we can't use classCI in my opinion since it is based on binomial
 # countsallwt: WT reads
 # countsnormalwtnorm: WT normalized reads (corrected for multi read count)
 # the ratio between the constitutes repetitiveness!
@@ -186,70 +178,14 @@ gr$repetitivenessClass <- classCI(gr$countsallwt, gr$countsnormalwtnorm,
                                   probs = c(med = 0.6, high = 0.9), comma = 1,
                                   plotname=file.path(saveLocation, paste0("Repetitiveness_", prefix, ".pdf")))
 
-#Other functions which were done for arabidopsis
 
-#gr <- histoneAnnotate(gr)
-#cl <- makeCluster(24)
-#gr <- methAnnotate(gr, cl)
-#stopCluster(cl)
-#gr <- tissueSpec(gr, loci) #adapted for zygotes, key mutants, strains
-#gr <- agoIP(gr, loci)
-#cl <- makeCluster(24)
-#Pol45(gr, cl)
-#stopCluster(cl)
-#gr <- annPol(gr)
+gr$phaseClass <- as.ordered(cut(gr$phaseScore, c(-1, 0, 60, Inf),include.lowest=TRUE,
+                                labels= c("none","median","high")))
 
-save(gr, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
+save(gr, meta, metawt, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 # export as gff3 file for viewing in browser
 export.gff3(gr, con = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".gff")))
 #Write csv for phasing
 
 write.csv(as.data.frame(gr), file = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".csv")))
 #Save file
-
-
-#------------------------------------ examining individual features
-table(gr$sizeclass)
-#
-#      (0,100]     (100,400]    (400,1500] (1500,3e+03] (3e+03,Inf]
-#          272          2113          3109         552         118
-table(gr$predominant_sRNA_sizeClass)
-#   equal_20bp   equal_21bp  larger_21bp smaller_20bp
-#          415         3302         1080         1367
-table(gr$ratio_strand_class)
-# strong_bias    med_bias     no_bias
-#        2536        2182         829
-table(gr$repetitivenessClass)
-#
-#  low  med high
-#  518 1777 3477
-
-#------------------------------------ interessing associations
-
-table(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass)
-ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass)))
-#                low  med high  Sum
-#                                  
-# equal_20bp      12   98  298  408
-# equal_21bp     139  780 2368 3287
-# larger_21bp    261  441  340 1042
-# smaller_20bp   106  458  471 1035
-# Sum            518 1777 3477 5772
-# -> 20/21 are very Repetitive, but smalle/bigger not
-chisq.test(table(gr$predominant_sRNA_sizeClass, gr$predominant_5prime_letter))
-ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$sizeclass)))
-#               (0,100] (100,400] (400,1.5e+03] (1.5e+03,3e+03] (3e+03,Inf]  Sum
-#
-# equal_20bp         28       187           186              13           1  415
-# equal_21bp        144      1106          1606             349          97 3302
-# larger_21bp        30       358           565             117          10 1080
-# smaller_20bp       70       462           752              73          10 1367
-# Sum               272      2113          3109             552         118 6164
-ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$predominant_5prime_letter)))
-#                  A   AC  ACG   AG   AT    C   CG  CGT   CT    G   GT    T  Sum
-# equal_20bp      10    2    0    2    3   40    1    0   10  132   18  191  409
-# equal_21bp     204   11    0   23  146  125   47   15  114   53  113 2347 3198
-# larger_21bp    100   15    5   36   13   99  168    1   19  211   32  216  915
-# smaller_20bp   113   17    3   31    3  124  201    1   21  172   24  220  930
-# Sum            427   45    8   92  165  388  417   17  164  568  187 2974 5452
-# -> most 21bp start with T (no G!), 20bp start T or G
