@@ -38,6 +38,7 @@ load(file.path(inputLocation,inputFile))
 factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
 
 #####Establish output files#####
+gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
 saveLocation <- file.path(inputLocation, paste(lociRun,"MCAOutputs", gitfingerprint, sep = "_"))
 try(dir.create(saveLocation))
 
