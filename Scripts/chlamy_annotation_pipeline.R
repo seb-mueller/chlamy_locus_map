@@ -127,7 +127,7 @@ gr <- featureAnn(locAnn = gr, annotations = annotenv)
 
 #New methylation functions
 # gr <- methylation2(gr,annoDir)
-# gr <- methylation(gr, annoDir)
+gr <- methylation(gr, annoDir)
 #gr <- methylationDiff(gr,annoDir) #Almost no results - very small datasets
 #gr <- methylationDiff(grannoDir) #Almost no results - very small datasets
 
