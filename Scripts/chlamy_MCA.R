@@ -1,17 +1,45 @@
+#Script to run MCA to cluster loci according to their annotations
+#Adapted by Nick Matthews from Tom Hardcastle's orginal code
+#Date: 13/12/18
 
+#To submit this script to condor
+#		 /scripts/conscriptoR /projects/nick_matthews/chlamy_locus_map_github/scripts/chlamy_MCA.r -p19
 
+library(FactoMineR)
+library(clv)
+library(grid)
+library(ggplot2)
+library(xtable)
+library(rtracklayer)
+library(reshape)
+library(segmentSeq)
+library(pROC)
+library(MASS)
+library(RColorBrewer)
+library(mclust) 
+library(readr)
+library(dplyr)
 
+#####Setup directories#####
+lociRun <- "LociRun2018_multi200_gap100"
+baseDir <- "/projects/nick_matthews"
+#baseDir <- "C:/Users/Nick/Documents/PhD/Projects/Chlamy"
+# Specify location of annotation outputs
+inputLocation <- file.path(baseDir, "segmentation_2018", lociRun)
+inputfile <- "gr_fdr0.05.RData"
+#set working directory to github repository on cluster
+#gitdir      <- file.path(baseDir, "chlamy_locus_map")
+gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 
+#Load in loci and gr files
+load(file.path(inputLocation,inputFile))
+#load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
+#Load in list of factors
+factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
 
-
-
-
-
-
-
-
-
-
+#####Establish output files#####
+saveLocation <- file.path(inputLocation, paste(lociRun,"MCAOutputs", gitfingerprint, sep = "_"))
+try(dir.create(saveLocation))
 
 
 # HCPC code from FactoMiner needs tweak to work on kmeans only.
@@ -129,8 +157,8 @@ filcat <- lapply(categories, function(x) {
   x
 })
 
-save(gr, file="gr_clustered.RData")
-save(resMCA, file="resMCA.RData")
+save(gr, file=file.path(saveLocation,"gr_clustered.RData"))
+save(resMCA, file=file.path(saveLocation,"resMCA.RData"))
 #load("resMCA.RData")
 
 
