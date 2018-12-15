@@ -60,7 +60,7 @@ supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% select(annotation) %>% unli
 
 #Summary dataframe with the select and supplementary factors
 cF7 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))                                                
-
+cF7 <- as.data.frame(unclass(cF7))  
 #png("catchall.png")
 
 #tables summarising output
