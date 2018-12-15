@@ -5,20 +5,20 @@
 #To submit this script to condor
 #		 /scripts/conscriptoR /projects/nick_matthews/chlamy_locus_map_github/scripts/chlamy_MCA_analysis.r -p19
 
-install.packages("FactoMineR")
-library(FactoMineR)
-library(clv)
-library(grid)
+
+try(library(FactoMineR))
+try(library(clv))
+try(library(grid))
 library(ggplot2)
-library(xtable)
-library(rtracklayer)
-library(reshape)
+try(library(xtable))
+try(library(rtracklayer))
+try(library(reshape))
 library(segmentSeq)
-library(pROC)
-library(MASS)
+try(library(pROC))
+try(library(MASS))
 library(RColorBrewer)
-library(mclust) 
-library(readr)
+try(library(mclust))
+try(library(readr))
 library(dplyr)
 
 #####Setup directories#####
@@ -32,7 +32,7 @@ inputfile <- "gr_fdr0.05.RData"
 #gitdir      <- file.path(baseDir, "chlamy_locus_map")
 gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 
-#Load in loci and gr files
+#Load in gr file
 load(file.path(inputLocation,inputFile))
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05.RData")
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
