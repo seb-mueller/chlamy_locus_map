@@ -22,7 +22,7 @@ library(readr)
 library(dplyr)
 
 #####Setup directories#####
-lociRun <- "LociRun2018_multi200_gap100"
+lociRun <- "LociRun2018_multi200_gap100_90c7213"
 baseDir <- "/projects/nick_matthews"
 #baseDir <- "C:/Users/Nick/Documents/PhD/Projects/Chlamy"
 # Specify location of annotation outputs
@@ -34,6 +34,7 @@ gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 
 #Load in loci and gr files
 load(file.path(inputLocation,inputFile))
+#load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05.RData")
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
 #Load in list of factors
 factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
@@ -70,7 +71,7 @@ for(ii in 1:ncol(cF7)) {
 }
 
 # MCA
-#mc7 <- MCA(cF7, graph = FALSE,ncp = 4 ,quali.sup=which(colnames(cF7) %in% supFac))
+mc7 <- MCA(cF7, graph = FALSE,ncp = 4 ,quali.sup=which(colnames(cF7) %in% supFac))
 #TODO run all the diagnostics
 #TODO edit save locations and save names to more appropriate
 # parameter sweep on dimensions 1-15 and clusters 2-15

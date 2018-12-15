@@ -72,7 +72,6 @@ TE_DualenRandI,logical,FALSE,TRUE
 TE_EnSpm,logical,FALSE,TRUE
 TE_Gulliver,logical,FALSE,TRUE
 TE_Gypsy,logical,FALSE,TRUE
-TE_Harbinger,logical,FALSE,TRUE
 TE_hAT,logical,FALSE,TRUE
 TE_L1,logical,FALSE,TRUE
 TE_Mariner,logical,FALSE,TRUE

@@ -43,6 +43,15 @@ saveLocation <- file.path(inputLocation, paste(lociRun,"MCAOutputs", gitfingerpr
 try(dir.create(saveLocation))
 
 
+# selected factors which will be used to inform the clustering
+selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% pull(annotation)
+
+# supplementary factors for which association with clusters will be calculated, but which will not inform the clustering
+supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% pull(annotation)
+
+#Summary dataframe with the select and supplementary factors
+cF7 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))    
+
 # HCPC code from FactoMiner needs tweak to work on kmeans only.
 source(file.path(gitdir,"Scripts/hcpc.R"))
 #source("C:/Users/Nick/Documents/PhD/Projects/Chlamy/chlamy_locus_map/Scripts/hcpc.R")
