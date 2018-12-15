@@ -53,10 +53,10 @@ try(dir.create(saveLocation))
 # selected factors which will be used to inform the clustering
 #TODO decide exactly which annotations are going in main and supplementary factors
 
-selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% pull(annotation)
+selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% select(annotation) %>% unlist()
 
 # supplementary factors for which association with clusters will be calculated, but which will not inform the clustering
-supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% pull(annotation)
+supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% select(annotation) %>% unlist()
 
 #Summary dataframe with the select and supplementary factors
 cF7 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))                                                
