@@ -37,7 +37,7 @@ load(file.path(inputLocation,inputFile))
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05.RData")
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
 #Load in list of factors
-factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
+factorMaster <- read.csv(file.path(gitdir,"Annotation2Use.csv"),stringsAsFactors = FALSE)
 
 #####Establish output files#####
 gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
