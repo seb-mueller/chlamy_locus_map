@@ -5,7 +5,7 @@
 #To submit this script to condor
 #		 /scripts/conscriptoR /projects/nick_matthews/chlamy_locus_map_github/scripts/chlamy_MCA_analysis.r -p19
 
-
+install.packages("FactoMineR")
 library(FactoMineR)
 library(clv)
 library(grid)
