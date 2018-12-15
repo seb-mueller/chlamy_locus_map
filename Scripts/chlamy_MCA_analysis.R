@@ -33,7 +33,7 @@ inputFile <- "gr_fdr0.05.RData"
 gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 
 #Load in gr file
-load(file.path(inputLocation,inputFile))
+load(file.path(baseDir, "segmentation_2018",inputFile))
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05.RData")
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
 #Load in list of factors
