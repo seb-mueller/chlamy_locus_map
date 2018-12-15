@@ -33,7 +33,7 @@ inputFile <- "gr_fdr0.05.RData"
 gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 
 #Load in gr file
-load(file.path(baseDir, "segmentation_2018",inputFile))
+load(file.path(inputLocation,inputFile))
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05.RData")
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
 #Load in list of factors
@@ -41,7 +41,7 @@ factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
 
 #####Establish output files#####
 gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
-saveLocation <- file.path(inputLocation, paste(lociRun,"MCAOutputs", gitfingerprint, sep = "_"))
+saveLocation <- file.path(baseDir,"segmentation_2018", paste(lociRun,"MCAOutputs", gitfingerprint, sep = "_"))
 try(dir.create(saveLocation))
 
 
