@@ -27,7 +27,7 @@ baseDir <- "/projects/nick_matthews"
 #baseDir <- "C:/Users/Nick/Documents/PhD/Projects/Chlamy"
 # Specify location of annotation outputs
 inputLocation <- file.path(baseDir, "segmentation_2018", lociRun)
-inputfile <- "gr_fdr0.05.RData"
+inputFile <- "gr_fdr0.05.RData"
 #set working directory to github repository on cluster
 #gitdir      <- file.path(baseDir, "chlamy_locus_map")
 gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
