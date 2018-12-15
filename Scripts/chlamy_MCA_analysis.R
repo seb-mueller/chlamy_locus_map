@@ -92,7 +92,7 @@ image(sapply(dimList, function(x) sapply(x[-1], function(y) y$betweenss / y$tots
 dev.off()
 
 # rand test to compare overlap with transposable element superfamilies 
-zzz <- (sapply(dimList, function(x) sapply(x[-1], function(y) adjustedRandIndex(y$cluster, gr$TE))))
+zzz <- (sapply(dimList, function(x) sapply(x[-1], function(y) adjustedRandIndex(y$cluster, gr$transposons))))
 png(file.path(saveLocation,"kmean_randTE.png"))
 image(zzz)
 dev.off()
