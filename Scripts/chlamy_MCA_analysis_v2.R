@@ -83,7 +83,7 @@ mc9 <- MCA(cF9, graph = FALSE,ncp = 4 ,quali.sup=which(colnames(cF9) %in% supFac
 # parameter sweep on dimensions 1-15 and clusters 2-15
 cl <- makeCluster(14)
 dimList <- list()
-for(nn in 1:15) {
+for(nn in 1:16) {
     mc9 <- MCA(cF9, graph = FALSE,ncp = nn ,quali.sup=which(colnames(cF9) %in% supFac))
     dimList[[nn]] <- c(list(NA), parLapply(cl, 2:15, function(i, coords)
         kmeans(x = coords, iter.max = 1000, nstart = 1000, centers = i), coords = mc9$ind$coord))
