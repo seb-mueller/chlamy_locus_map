@@ -21,7 +21,7 @@ try(library(mclust))
 try(library(readr))
 library(dplyr)
 
-library(LabelCompare)
+try(library(LabelCompare))
 try(library(Kendall))
 try(library(RANN))
 try(library(igraph))
