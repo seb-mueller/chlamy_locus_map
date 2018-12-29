@@ -21,6 +21,12 @@ try(library(mclust))
 try(library(readr))
 library(dplyr)
 
+library(LabelCompare)
+try(library(Kendall))
+try(library(RANN))
+try(library(igraph))
+
+
 #####Setup directories#####
 lociRun <- "LociRun2018_multi200_gap100_90c7213"
 baseDir <- "/projects/nick_matthews"
@@ -59,76 +65,104 @@ selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% select(annotation) %>% 
 supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% select(annotation) %>% unlist()
 
 #Summary dataframe with the select and supplementary factors
-cF7 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))                                                
-cF7 <- as.data.frame(unclass(cF7))  
+cF9 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))                                                
+cF9 <- as.data.frame(unclass(cF9))  
 #png("catchall.png")
 
 #tables summarising output
 write("", file = file.path(saveLocation,"ClassTable_gr.txt"))
-for(ii in 1:ncol(cF7)) {
-    cat(colnames(cF7)[ii], "\t", paste(levels(cF7[,ii]), collapse = "\t"), "\n", file = file.path(saveLocation,"ClassTable_gr.txt"), append = TRUE)
-    cat("", "\t", paste(as.numeric(table(cF7[,ii])), collapse = "\t"), "\n\n", file = file.path(saveLocation,"ClassTable_gr.txt"), append = TRUE)
+for(ii in 1:ncol(cF9)) {
+    cat(colnames(cF9)[ii], "\t", paste(levels(cF9[,ii]), collapse = "\t"), "\n", file = file.path(saveLocation,"ClassTable_gr.txt"), append = TRUE)
+    cat("", "\t", paste(as.numeric(table(cF9[,ii])), collapse = "\t"), "\n\n", file = file.path(saveLocation,"ClassTable_gr.txt"), append = TRUE)
 }
 
 # MCA
-mc7 <- MCA(cF7, graph = FALSE,ncp = 4 ,quali.sup=which(colnames(cF7) %in% supFac))
+mc9 <- MCA(cF9, graph = FALSE,ncp = 4 ,quali.sup=which(colnames(cF9) %in% supFac))
 #TODO run all the diagnostics
 #TODO edit save locations and save names to more appropriate
 # parameter sweep on dimensions 1-15 and clusters 2-15
 cl <- makeCluster(14)
 dimList <- list()
 for(nn in 1:15) {
-    mc7 <- MCA(cF7, graph = FALSE,ncp = nn ,quali.sup=which(colnames(cF7) %in% supFac))
+    mc9 <- MCA(cF9, graph = FALSE,ncp = nn ,quali.sup=which(colnames(cF9) %in% supFac))
     dimList[[nn]] <- c(list(NA), parLapply(cl, 2:15, function(i, coords)
-        kmeans(x = coords, iter.max = 1000, nstart = 1000, centers = i), coords = mc7$ind$coord))
+        kmeans(x = coords, iter.max = 1000, nstart = 1000, centers = i), coords = mc9$ind$coord))
 }
     
 save(dimList, file = file.path(saveLocation,"dimList.RData"))
 #load("dimList.RData")
+stopCluster(cl)
 
-# probably not useful as a measure of performance
-png(file.path(saveLocation,"kmean_ss.png"))
-image(sapply(dimList, function(x) sapply(x[-1], function(y) y$betweenss / y$totss)))
-dev.off()
 
-# rand test to compare overlap with transposable element superfamilies 
-zzz <- (sapply(dimList, function(x) sapply(x[-1], function(y) adjustedRandIndex(y$cluster, gr$transposons))))
-png(file.path(saveLocation,"kmean_randTE.png"))
-image(zzz)
-dev.off()
 
 # stability analyses. Takes a while!
+cl <- makeCluster(40)
+clusterEvalQ(cl, library(FactoMineR))
 dimStab <- list()
-for(nn in 1:15) {
-    dimStab[[nn]] <- list()
-    for(nclust in 2:15) {
-        kcb <- list()
-        message(nn, ":", nclust, appendLF = FALSE)
-        for(ii in 1:10) {
-            repeat {
-                message(".", appendLF = FALSE)
-                rsamp <- sample(1:nrow(cF7), nrow(cF7), replace = TRUE)
-                mcb <- try(MCA(cF7[rsamp,], graph = FALSE,ncp = nn ,quali.sup=which(colnames(cF7) %in% supFac)))
-                if(!"try-error" %in% class(mcb)) break()
-                
-            }
-            cob <- mcb$ind$coord
-            kcb[[ii]] <- list(rsamp = rsamp,
-                        km = kmeans(cob, centers = nclust, iter.max = 1000, nstart = 100),
-                        cob = mcb$ind$coord, eig = mcb$eig)
-        }
-
-        kjaq <- sapply(kcb, function(x, kc) {
-            bov <- (table(cbind.data.frame(kc = kc$cluster[x$rsamp], boot = x$km$cluster)[!duplicated(x$rsamp),]))
-            apply(bov / (outer(rowSums(bov) , colSums(bov), FUN='+') - bov), 2, max)
-        }, kc = dimList[[nn]][[nclust]])
-        dimStab[[nn]][[nclust]] <- kjaq
-        message()
-    }
+for(nn in 1:16) {
+  dimStab[[nn]] <- list()
+  for(nclust in 2:15) {
+    message(nn, ":", nclust, appendLF = FALSE)
+    dimStab[[nn]][[nclust]] <- do.call("rbind", parLapply(cl, 1:100, function(ii, kc, nn, nclust, cF9, supFac) {
+      message(".", appendLF = FALSE)
+      repeat {
+        
+        rsamp <- unique(sample(1:nrow(cF9), nrow(cF9), replace = TRUE))
+        mcb <- try(MCA(cF9[unique(rsamp),], graph = FALSE,ncp = nn ,quali.sup=which(colnames(cF9) %in% supFac)))
+        if(!"try-error" %in% class(mcb)) break
+      }
+      cob <- mcb$ind$coord
+      #kcb[[ii]] <- list(rsamp = rsamp,
+      km = kmeans(cob, centers = nclust, iter.max = 1000, nstart = 100)
+      #            cob = mcb$ind$coord, eig = mcb$eig)
+      bov <- (table(cbind.data.frame(kc = kc$cluster[rsamp], boot = km$cluster)))#[!duplicated(rsamp),]))
+      mstat <- apply(bov / (outer(rowSums(bov) , colSums(bov), FUN='+') - bov), 2, max)
+      return(mstat)
+    }, kc = dimList[[nn]][[nclust]], nn = nn, nclust = nclust, cF9 = cF9, supFac = supFac)
+    )
+    message()
+  }
 }
 
 save(dimStab, file = file.path(saveLocation,"dimStab.RData"))
 #load("dimStab.RData")
+
+stopCluster(cl)
+
+#Do clusterings with identified settings
+nclust <- 6; ndim <- 7
+klist <- dimList[[ndim]]
+mc9 <- MCA(cF9, graph = FALSE,ncp = ndim ,quali.sup=which(colnames(cF9) %in% supFac))
+save(mc9, file = "mc9.RData")
+
+
+#Calculate gapstat based on Tibshirani et al. 2001 and using Hardcastle et al. 2018 code
+cl <- makeCluster(10)
+gapStat <- lapply(2:15, function(cls) {
+  uW <- parSapply(cl, 1:10, function(rrr, cls, klist, mc9) {
+    clsplit <-split(1:nrow(mc9$ind$coord), klist[[cls]]$cluster)
+    bbox <- lapply(clsplit, function(z) apply(mc9$ind$coord[z,,drop = FALSE], 2, range))
+    rdat <- do.call("rbind", lapply(1:cls, function(clust)
+      apply(bbox[[clust]], 2, function(x) runif(sum(klist[[cls]]$cluster == cls), min = x[1], max = x[2]))
+    ))
+    kmr <- kmeans(x = rdat, iter.max = 1000, nstart = 1000, centers = cls)
+    log(sum(kmr$withinss))
+  }, cls = cls, klist = klist, mc9 = mc9)
+  se <- sd(uW) * sqrt(1 + 1 / length(uW))
+  c(mean(uW), log(sum(klist[[cls]]$withinss)), se)
+})
+
+save(gapStat, file = file.path(saveLocation,"gapStat.RData"))
+stopCluster(cl)
+
+clusterings <- lapply(2:nclust, function(kk) {    
+  mc9 <- MCA(cF9, graph = FALSE,ncp = ndim ,quali.sup=which(colnames(cF9) %in% supFac))
+  resMCA <- HCPC(mc9, graph = FALSE, proba = 1, consol = FALSE, order = FALSE, nb.clust = nclust, kk = kk, method = "centroid")
+  as.factor(resMCA$data.clust$clust)
+})
+save(clusterings, file = file.path(saveLocation,"clusterings.RData"))
+
+
 
 #Plot stability analysis
 
@@ -146,46 +180,6 @@ dev.off()
 cl <- makeCluster(19)
 clusterEvalQ(cl, library(clv))
 
-# Davies-Bouldin
-dviM <- apply(sapply(dimList, function(x, mc) parLapply(cl, x[-1], function(y, mc)
-    clv.Davies.Bouldin(cls.scatt.data(mc$ind$coord, as.integer(y$cluster)), "complete", "complete")
-                                                      , mc = mc), mc = mc7),2,unlist)
 
-dviM2 <- apply(sapply(dimList, function(x, mc)
-    zz <- parLapply(cl, x[-1], function(y, mc)
-        clv.Davies.Bouldin(cls.scatt.data(mc$ind$coord, as.integer(y$cluster)), "average", "average")
-                  , mc = mc), mc = mc7),2,unlist)
-
-dviM3 <- apply(sapply(dimList, function(x, mc)
-    zz <- parLapply(cl, x[-1], function(y, mc)
-        clv.Davies.Bouldin(cls.scatt.data(mc$ind$coord, as.integer(y$cluster)), "centroid", "centroid")
-                  , mc = mc), mc = mc7),2,unlist)
-
-pdf(file.path(saveLocation,"davies_bouldin_image.pdf"))
-image(dviM)
-image(dviM2)
-image(dviM3)
-dev.off()
-
-# Dunn
-dunnM <- apply(sapply(dimList, function(x, mc) parLapply(cl, x[-1], function(y, mc)
-    clv.Dunn(cls.scatt.data(mc$ind$coord, as.integer(y$cluster)), "complete", "complete")
-                                                      , mc = mc), mc = mc7),2,unlist)
-
-dunnM2 <- apply(sapply(dimList, function(x, mc)
-    zz <- parLapply(cl, x[-1], function(y, mc)
-        clv.Dunn(cls.scatt.data(mc$ind$coord, as.integer(y$cluster)), "average", "average")
-                  , mc = mc), mc = mc7),2,unlist)
-
-dunnM3 <- apply(sapply(dimList, function(x, mc)
-    zz <- parLapply(cl, x[-1], function(y, mc)
-        clv.Dunn(cls.scatt.data(mc$ind$coord, as.integer(y$cluster)), "centroid", "centroid")
-                  , mc = mc), mc = mc7),2,unlist)
-
-pdf(file.path(saveLocation,"dunn_image.pdf"))
-image(dunnM)
-image(dunnM2)
-image(dunnM3)
-dev.off()
 
 #Examine images and choose correct dimension/cluster number. Need to talk to Tom for interpretation

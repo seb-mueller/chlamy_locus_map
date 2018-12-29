@@ -80,14 +80,17 @@ computeOverlaps <- function(locAnn,annotations,assignNames = FALSE,  namesColumn
     overlap <- findOverlaps(locAnn,annotation)
     #extract only unique overlaps
     overlapunique <- !duplicated(queryHits(overlap))
-    #Set up column
-    locAnn$temp <- rep(FALSE, length(locAnn))
+    
     #Assign TRUE for those that overlap unless want to specify names of overlap
     if(assignNames == FALSE) {
+      #Set up column
+      locAnn$temp <- rep(FALSE, length(locAnn))
       locAnn$temp[queryHits(overlap)[overlapunique]] <- TRUE
     } else if(assignNames == TRUE) {
       #If assigning names takes the
-      locAnn$temp[queryHits(overlap)[overlapunique]] <- as.character(pull(annotation,namesColumn))[subjectHits(overlap)[overlapunique]]
+      #Set up column
+      locAnn$temp <- rep("none", length(locAnn))
+      locAnn$temp[queryHits(overlap)[overlapunique]] <- as.character(mcols(annotation)[,namesColumn])[subjectHits(overlap)[overlapunique]]
     } else {
       warning("assignNames must be either TRUE or FALSE")
     }
@@ -692,6 +695,20 @@ featureAnn <- function(locAnn, annotations) {
   #Assign previously described name
   locAnn$miRNAPrevDes <- rep("none", length(locAnn))
   locAnn$miRNAPrevDes[queryHits(miRNAoverlap)[miRNAoverlapunique]] <- as.character(miRNA$previouslyDescribed[subjectHits(miRNAoverlap)[miRNAoverlapunique]])
+
+  #Do overlapType and transposon superfamily for cluster analysis
+  TE_Class_DNA$type <- "TE_Class_DNA"
+  TE_Class_RET$type <- "TE_Class_RET"
+  elementsOrdered <- c(miRNA[,"type"],rRNA[,"type"],fiveprimeUTR[,"type"],threeprimeUTR[,"type"],
+                       exons[,"type"],introns[,"type"],TE_Class_DNA[,"type"],TE_Class_RET[,"type"],
+                       promoter[,"type"],MSAT[,"type"],irs[,"type"],trs[,"type"])
+  transposonsOrdered <- c(TE_TCR1,TE_TOC2,TE_hAT,TE_Novosib,TE_Gulliver,TE_Harbinger,TE_Mariner,TE_P,TE_EnSpm,
+                          TE_RTE,TE_L1,TE_DualenRandI,      
+                          TE_Gypsy,TE_Copia,TE_TOC1,TE_REM1,TE_DIRS)
+  transposonsOrdered$type <- transposonOrdered$superfamily
+  
+  auxAnnotations <- list(overlapType=elementsOrdered,transposonType=transposonsOrdered)
+  locAnn <- computeOverlaps(locAnn,auxAnnotations,assignNames = TRUE)
 
   locAnn
 }
