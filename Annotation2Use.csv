@@ -29,7 +29,7 @@ exons,logical,TRUE,FALSE
 expression,numeric,FALSE,FALSE
 expressionClass,ordered,TRUE,FALSE
 fiveprimeUTR,logical,FALSE,TRUE
-genes,logical,FALSE,FALSE
+genes,logical,FALSE,TRUE
 intergenic,logical,TRUE,FALSE
 introns,logical,TRUE,FALSE
 irs,logical,TRUE,FALSE
@@ -50,7 +50,7 @@ phased,logical,FALSE,FALSE
 phaseScore,numeric,FALSE,FALSE
 predominant_5prime_letter,factor,TRUE,FALSE
 predominant_sRNA_sizeClass,character,TRUE,FALSE
-promoter,logical,FALSE,FALSE
+promoter,logical,TRUE,FALSE
 ratio_strand,numeric,FALSE,FALSE
 ratio_strand_abs,numeric,FALSE,FALSE
 ratio_strand_class,ordered,TRUE,FALSE
