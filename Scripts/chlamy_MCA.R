@@ -243,7 +243,7 @@ methCG=import.gff3(file.path(annoDir,"meth_data/chlamy_CGmeth.gff3"))
 methCHH=import.gff3(file.path(annoDir,"meth_data/chlamy_CHHmeth.gff3"))
 methCHG=import.gff3(file.path(annoDir,"meth_data/chlamy_CHGmeth.gff3"))
 #Ensure sequence levels are matched to the reference
-seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(locAnn)
+seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(gr)
 #Create additional object that merged the three methylation files
 methAll <- c(methCG,methCHH,methCHG)
 annottrack_meth <- data.frame(chrom=seqnames(methAll), start=start(methAll), annot=rep("meth",length(methAll)))
