@@ -14,8 +14,8 @@ lociLocation <- file.path(baseDir, "segmentation_2018", lociRun)
 annoDir     <- file.path(baseDir, "resources")
 inputFile <- "gr_fdr0.05.RData"
 #Create location for saving figures
-saveLocation <- file.path(inputLocation,"figures")
-try(dir.create(saveLocation))
+figLocation <- file.path(inputLocation,"figures")
+try(dir.create(figLocation))
 #inputFile <- "gr_fdr0.05.RData"
 #set working directory to github repository on cluster
 #gitdir      <- file.path(baseDir, "chlamy_locus_map")
@@ -35,7 +35,7 @@ load(file.path(lociLocation,inputFile))
 
 
 #####Plot large stability plot#####
-pdf(file.path(saveLocation,"stabilityPlotLarge.pdf"), width = 12, height = 12)
+pdf(file.path(figLocation,"stabilityPlotLarge.pdf"), width = 12, height = 12)
 par(mfrow = c(16, 14))
 par(mar = c(0.2,0.2,0.2,0.2), oma = c(5,5,5,5))
 x0 <- y0 <- Inf; x1 <- y1 <- -Inf
@@ -58,14 +58,14 @@ dev.off()
 
 
 #####Variation explained by different dimensions#####
-pdf(file.path(saveLocation,"VarianceDimensions.pdf"))
+pdf(file.path(figLocation,"VarianceDimensions.pdf"))
 par(mar = c(3,4,4,2) + 0.1)
 plot(mc6$eig[,2], type = "b", xlab = "Dimension", ylab  = "% of variance", las = 1)
 dev.off()
 
 #####Smaller stability plot#####
 stab <- c(10, 10)
-pdf(file.path(saveLocation,"StabilityPlotSmall.pdf"), height = 5, width = 5)
+pdf(file.path(figLocation,"StabilityPlotSmall.pdf"), height = 5, width = 5)
 par(mfrow = c(10, 9))
 par(mar = c(0.2,0.2,0.2,0.2), oma = c(5,5,5,5))
 x0 <- y0 <- Inf; x1 <- y1 <- -Inf
@@ -87,7 +87,7 @@ grid.segments(x0 * 0.75, y1, x0 * 0.75, y0, arrow = arrow(length = unit(0.1, "in
 dev.off()
 
 #####Observed vs expected SSE for different cluster numbers#####
-pdf(file.path(saveLocation,"SumSquares.pdf"), height = 5, width = 5)
+pdf(file.path(figLocation,"SumSquares.pdf"), height = 5, width = 5)
 plot(x = 2:15, gapStat[,1], ylim = c(6.5,10), ylab = "Wss", xlab = "k", type = "b", col = "red", las = 1)
 lines(x = 2:15, gapStat[,2], ylim = c(6.5,10), ylab = "Wss", xlab = "k", type = "b")
 legend(x = "bottomleft", lty = 1, col = c("black", "red"), legend = c("Observed", "Expected"), bty = "n")
@@ -100,7 +100,7 @@ load(file.path(annoDir,"chlamy_all_annotations.Rdata"), envir = annotenv, verbos
 gr <- featureAnn(gr,annotations = annotenv)
 
 
-pdf(file.path(saveLocation,"NMIPlots.pdf"), height = 5, width = 5)
+pdf(file.path(figLocation,"NMIPlots.pdf"), height = 5, width = 5)
 par(mfrow = c(2,1), mar = c(2,3,3,3))
 plot(x = 2:length(klist), y = sapply(klist[-1], function(x) igraph::compare(x$cluster, as.integer(as.factor(gr$transposonType)), method = "nmi")), type = "b", xlab = "k", ylab = "NMI", main = "NMI: TE superfamily")
 
@@ -108,7 +108,7 @@ ot <- as.integer(as.factor(gr9$overlaptype)); ot[is.na(ot)] <- 0
 plot(x = 2:length(klist), y = sapply(klist[-1], function(x) igraph::compare(x$cluster, as.integer(as.factor(gr$overlapType)), method = "nmi")), type = "b", xlab = "k", ylab = "NMI", main = "NMI: Annotation features")
 dev.off()
 
-pdf(file.path(saveLocation,"NMIPlots_NoTE.pdf"), height = 5, width = 5)
+pdf(file.path(figLocation,"NMIPlots_NoTE.pdf"), height = 5, width = 5)
 plot(x = 2:length(klist), y = sapply(klist[-1], function(x) igraph::compare(x$cluster, as.integer(as.factor(gr$overlapType)), method = "nmi")), type = "b", xlab = "k", ylab = "NMI", main = "NMI: Annotation features")
 dev.off()
 
@@ -116,7 +116,7 @@ dev.off()
 #####Plot cluster hierarchy#####
 z <- c(6,5,4,3,2)
 
-pdf(file.path(saveLocation,"cluster_hierarchy.pdf"), height = 7, width = 7)
+pdf(file.path(figLocation,"cluster_hierarchy.pdf"), height = 7, width = 7)
 par(mar = c(1,1,1,1))
 plot(NA, NA, ylim = c(0, length(z) * 2 - 1), xlim = c(0, length(clusterings[[5]])), axes = FALSE, xlab = "", ylab = "")
 par(mfrow = c(1, 1))

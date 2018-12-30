@@ -5,29 +5,36 @@
 #To submit this script to condor
 #		 /scripts/conscriptoR /projects/nick_matthews/chlamy_locus_map_github/scripts/chlamy_MCA.r -p19
 
-library(FactoMineR)
-library(clv)
-library(grid)
+try(library(FactoMineR))
+try(library(clv))
+try(library(grid))
 library(ggplot2)
-library(xtable)
-library(rtracklayer)
-library(reshape)
+try(library(xtable))
+try(library(rtracklayer))
+try(library(reshape))
 library(segmentSeq)
-library(pROC)
-library(MASS)
+try(library(pROC))
+try(library(MASS))
 library(RColorBrewer)
-library(mclust) 
-library(readr)
+try(library(mclust))
+try(library(readr))
 library(dplyr)
+
+try(library(LabelCompare))
+try(library(Kendall))
+try(library(RANN))
+try(library(igraph))
 
 #####Setup directories#####
 MCAOutputs <- "LociRun2018_multi200_gap100_90c7213_MCAOutputs_05c5bb5"
+lociRun <- "LociRun2018_multi200_gap100_90c7213"
 baseDir <- "/projects/nick_matthews"
 #baseDir <- "C:/Users/Nick/Documents/PhD/Projects/Chlamy"
 # Specify location of annotation outputs
 inputLocation <- file.path(baseDir, "segmentation_2018", MCAOutputs)
 lociLocation <- file.path(baseDir, "segmentation_2018", lociRun)
 figLocation <- file.path(inputLocation,"figures")
+try(dir.create(figLocation))
 saveLocation <- inputLocation
 inputfile <- "gr_fdr0.05.RData"
 annoDir     <- file.path(baseDir, "resources")
@@ -39,7 +46,7 @@ gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 load(file.path(lociLocation,inputFile))
 #load("C:/Users/Nick/Documents/PhD/Projects/Chlamy/gr_fdr0.05_41c2431.RData")
 #Load in list of factors
-factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
+factorMaster <- read.csv(file.path(gitdir,"Annotation2Use.csv"),stringsAsFactors = FALSE)
 
 #####Establish output files#####
 #gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
@@ -48,10 +55,10 @@ factorMaster <- read_csv(file.path(gitdir,"Annotation2Use.csv"))
 
 
 # selected factors which will be used to inform the clustering
-selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% pull(annotation)
+selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% select(annotation) %>% unlist()
 
 # supplementary factors for which association with clusters will be calculated, but which will not inform the clustering
-supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% pull(annotation)
+supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% select(annotation) %>% unlist()
 
 #Summary dataframe with the select and supplementary factors
 cF6 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))    
