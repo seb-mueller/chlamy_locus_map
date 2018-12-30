@@ -137,7 +137,7 @@ stopCluster(cl)
 nclust <- 6; ndim <- 7
 klist <- dimList[[ndim]]
 mc6 <- MCA(cF6, graph = FALSE,ncp = ndim ,quali.sup=which(colnames(cF6) %in% supFac))
-save(mc6, file = file.path(saveLocation("mc6.RData")))
+save(mc6, file = file.path(saveLocation,"mc6.RData"))
 
 
 #Calculate gapstat based on Tibshirani et al. 2001 and using Hardcastle et al. 2018 code
