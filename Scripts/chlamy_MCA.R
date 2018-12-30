@@ -299,5 +299,3 @@ lapply(1:nclust, function(ii) {
   x <- resMCA$desc.ind$para[[ii]]
   write.table(as.data.frame(gr[as.integer(names(x)),])[,1:4], sep = "\t", quote = FALSE, row.names = TRUE, col.names = NA, file = file.path(inputLocation,paste("paragons_LC", ii, ".txt", sep = "")))
 })
-
-dev.off() 
