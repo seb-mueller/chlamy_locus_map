@@ -104,7 +104,6 @@ pdf(file.path(figLocation,"NMIPlots.pdf"), height = 5, width = 5)
 par(mfrow = c(2,1), mar = c(2,3,3,3))
 plot(x = 2:length(klist), y = sapply(klist[-1], function(x) igraph::compare(x$cluster, as.integer(as.factor(gr$transposonType)), method = "nmi")), type = "b", xlab = "k", ylab = "NMI", main = "NMI: TE superfamily")
 
-ot <- as.integer(as.factor(gr9$overlaptype)); ot[is.na(ot)] <- 0
 plot(x = 2:length(klist), y = sapply(klist[-1], function(x) igraph::compare(x$cluster, as.integer(as.factor(gr$overlapType)), method = "nmi")), type = "b", xlab = "k", ylab = "NMI", main = "NMI: Annotation features")
 dev.off()
 

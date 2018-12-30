@@ -36,7 +36,7 @@ lociLocation <- file.path(baseDir, "segmentation_2018", lociRun)
 figLocation <- file.path(inputLocation,"figures")
 try(dir.create(figLocation))
 saveLocation <- inputLocation
-inputfile <- "gr_fdr0.05.RData"
+inputFile <- "gr_fdr0.05.RData"
 annoDir     <- file.path(baseDir, "resources")
 #set working directory to github repository on cluster
 #gitdir      <- file.path(baseDir, "chlamy_locus_map")
