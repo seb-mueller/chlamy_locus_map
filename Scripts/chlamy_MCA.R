@@ -226,9 +226,8 @@ save(resMCA, file=file.path(inputLocation,"resMCA.RData"))
 
 
 # try plotting density of loci in different clusters across genome; compare with gene and transposable element densities.
-#Attach annotation environment
-annotenv <- new.env()
-load(file.path(annoDir,"chlamy_all_annotations.Rdata"), envir = annotenv, verbose = FALSE)
+#Load in annotations
+load(file.path(annoDir,"chlamy_all_annotations.Rdata"), verbose = FALSE)
 
 #Genes
 
