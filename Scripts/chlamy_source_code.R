@@ -705,7 +705,7 @@ featureAnn <- function(locAnn, annotations) {
   transposonsOrdered <- c(TE_TCR1,TE_TOC2,TE_hAT,TE_Novosib,TE_Gulliver,TE_Harbinger,TE_Mariner,TE_P,TE_EnSpm,
                           TE_RTE,TE_L1,TE_DualenRandI,      
                           TE_Gypsy,TE_Copia,TE_TOC1,TE_REM1,TE_DIRS)
-  transposonsOrdered$type <- transposonOrdered$superfamily
+  transposonsOrdered$type <- transposonsOrdered$superfamily
   #elementsOrderedTE <- c(transposonsOrdered[,"type"],elementsOrdered)
   
   auxAnnotations <- list(overlapType=elementsOrdered,transposonType=transposonsOrdered)
