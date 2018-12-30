@@ -42,7 +42,7 @@ compileAnnotations <- function(annoDir = "resources", annoFile) {
   fiveprimeUTR  <- anno[anno$type=="five_prime_UTR",]
 
   #Calculate promoter region the 500bp flanking region around gene
-  #TODO check this, surely the promoter region is the 500bp upstream... use gene or mRNA?
+  #TODO check this, surely the promoter region is the 500bp upstream
   promoter <- promoters(anno[anno$type=="mRNA"],upstream=500,downstream=0)
   promoter$type <- droplevels(promoter$type)
   levels(promoter$type) <- "promoter"
