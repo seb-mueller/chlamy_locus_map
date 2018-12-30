@@ -28,7 +28,7 @@ DCL3dependent,logical,TRUE,FALSE
 exons,logical,TRUE,FALSE
 expression,numeric,FALSE,FALSE
 expressionClass,ordered,TRUE,FALSE
-fiveprimeUTR,logical,TRUE,FALSE
+fiveprimeUTR,logical,FALSE,TRUE
 genes,logical,FALSE,FALSE
 intergenic,logical,TRUE,FALSE
 introns,logical,TRUE,FALSE
@@ -87,7 +87,7 @@ TE_RTE,logical,FALSE,TRUE
 TE_TCR1,logical,FALSE,TRUE
 TE_TOC1,logical,FALSE,TRUE
 TE_TOC2,logical,FALSE,TRUE
-threeprimeUTR,logical,FALSE,FALSE
+threeprimeUTR,logical,FALSE,TRUE
 transposons,logical,FALSE,FALSE
 trs,logical,TRUE,FALSE
 vegetative,logical,FALSE,FALSE
