@@ -61,7 +61,8 @@ selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% select(annotation) %>% 
 supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% select(annotation) %>% unlist()
 
 #Summary dataframe with the select and supplementary factors
-cF6 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))    
+cF6 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))
+cF6 <- as.data.frame(unclass(cF6))
 
 # HCPC code from FactoMiner needs tweak to work on kmeans only.
 source(file.path(gitdir,"Scripts/hcpc.R"))
@@ -69,7 +70,7 @@ source(file.path(gitdir,"Scripts/hcpc.R"))
 
 #MCA with clusters and dimensions set according to images
 #TODO decide cluster and dimension number from the plots
-nclust <- 9; ndim <- 7
+nclust <- 6; ndim <- 7
 #nclust <- 4; ndim <- 4
 #nclust <- 5; ndim <- 4
 #nclust <- 6; ndim <- 4
