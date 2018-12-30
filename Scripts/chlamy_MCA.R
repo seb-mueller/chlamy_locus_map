@@ -35,7 +35,6 @@ inputLocation <- file.path(baseDir, "segmentation_2018", MCAOutputs)
 lociLocation <- file.path(baseDir, "segmentation_2018", lociRun)
 figLocation <- file.path(inputLocation,"figures")
 try(dir.create(figLocation))
-saveLocation <- inputLocation
 inputFile <- "gr_fdr0.05.RData"
 annoDir     <- file.path(baseDir, "resources")
 #set working directory to github repository on cluster
@@ -185,7 +184,7 @@ cleanF9 <- cbind(as.data.frame(gr)[,1:3], cleanF9)
 #cleanF9 <- cleanF9[,-grep("mobile|mobType|AGO", colnames(cleanF9))]
 cleanF9 <- cbind(LC = gr$cluster, cleanF9)
 
-write.table(cleanF9, col.names = NA, quote = FALSE, sep = "\t", file = file.path(saveLocation,"Loci_annotation.txt"))
+write.table(cleanF9, col.names = NA, quote = FALSE, sep = "\t", file = file.path(inputLocation,"Loci_annotation.txt"))
 
 #Clean up the names
 pvalmatrixselC <- pvalmatrixsel
@@ -221,8 +220,8 @@ filcat <- lapply(categories, function(x) {
   x
 })
 
-save(gr, file=file.path(saveLocation,"gr_clustered.RData"))
-save(resMCA, file=file.path(saveLocation,"resMCA.RData"))
+save(gr, file=file.path(inputLocation,"gr_clustered.RData"))
+save(resMCA, file=file.path(inputLocation,"resMCA.RData"))
 #load("resMCA.RData")
 
 
@@ -299,7 +298,7 @@ ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr4.png"),width=10,height
 #Output paragons (most representative loci for each cluster) for plotting in genome viewer
 lapply(1:nclust, function(ii) {
   x <- resMCA$desc.ind$para[[ii]]
-  write.table(as.data.frame(gr[as.integer(names(x)),])[,1:4], sep = "\t", quote = FALSE, row.names = TRUE, col.names = NA, file = file.path(saveLocation,paste("paragons_LC", ii, ".txt", sep = "")))
+  write.table(as.data.frame(gr[as.integer(names(x)),])[,1:4], sep = "\t", quote = FALSE, row.names = TRUE, col.names = NA, file = file.path(inputLocation,paste("paragons_LC", ii, ".txt", sep = "")))
 })
 
 dev.off() 
