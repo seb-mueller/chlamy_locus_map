@@ -53,11 +53,12 @@ factorMaster <- read.csv(file.path(gitdir,"Annotation2Use.csv"),stringsAsFactors
 #try(dir.create(saveLocation))
 
 
-# selected factors which will be used to inform the clustering
-selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% select(annotation) %>% unlist()
+# selected factors which will be used to inform the clustering 
+#dplyr and MASS select functions clash so have to specify
+selFac <- factorMaster %>% filter(PrimaryAnno==TRUE) %>% dplyr::select(annotation) %>% unlist()
 
 # supplementary factors for which association with clusters will be calculated, but which will not inform the clustering
-supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% select(annotation) %>% unlist()
+supFac <- factorMaster %>% filter(SupAnno==TRUE) %>% dplyr::select(annotation) %>% unlist()
 
 #Summary dataframe with the select and supplementary factors
 cF6 <- as.data.frame(elementMetadata(gr[,c(selFac,supFac)]))
@@ -70,7 +71,7 @@ source(file.path(gitdir,"Scripts/hcpc.R"))
 #MCA with clusters and dimensions set according to images
 #TODO decide cluster and dimension number from the plots
 nclust <- 6; ndim <- 7
-#nclust <- 4; ndim <- 4
+#nclust <- 2; ndim <- 7
 #nclust <- 5; ndim <- 4
 #nclust <- 6; ndim <- 4
 mc6 <- MCA(cF6, graph = FALSE,ncp = ndim ,quali.sup=which(colnames(cF6) %in% supFac))
@@ -224,78 +225,3 @@ save(gr, file=file.path(inputLocation,"gr_clustered.RData"))
 save(resMCA, file=file.path(inputLocation,"resMCA.RData"))
 #load("resMCA.RData")
 
-
-# try plotting density of loci in different clusters across genome; compare with gene and transposable element densities.
-#Load in annotations
-load(file.path(annoDir,"chlamy_all_annotations.Rdata"), verbose = FALSE)
-
-#Genes
-
-mRNA <- genes[genes$type=="mRNA"]
-mRNAu <- mRNA[!duplicated(unlist(mRNA$Parent)),]
-annottrack_genes <- data.frame(chrom=seqnames(mRNAu), start=start(mRNAu), annot=rep("genes",length(mRNAu)))
-
-#Transposons
-annottrack_TEs <- data.frame(chrom=seqnames(transposons), start=start(transposons), annot=rep("TEs",length(transposons)))
-
-#New methylation - combined into one track
-methCG=import.gff3(file.path(annoDir,"meth_data/chlamy_CGmeth.gff3"))
-methCHH=import.gff3(file.path(annoDir,"meth_data/chlamy_CHHmeth.gff3"))
-methCHG=import.gff3(file.path(annoDir,"meth_data/chlamy_CHGmeth.gff3"))
-#Ensure sequence levels are matched to the reference
-seqlevels(methCG) <- seqlevels(methCHG) <- seqlevels(methCHH) <- seqlevels(gr)
-#Create additional object that merged the three methylation files
-methAll <- c(methCG,methCHH,methCHG)
-annottrack_meth <- data.frame(chrom=seqnames(methAll), start=start(methAll), annot=rep("meth",length(methAll)))
-
-gr<-gr
-annottrack_allloci <- data.frame(chrom=as.factor(paste(as.character(gr@seqnames), sep = "")), start=start(gr), annot=rep("loci",length(gr)))
-annottrack_cluster <- data.frame(chrom=as.factor(paste(as.character(gr@seqnames), sep = "")), start=start(gr), annot=paste("LC", gr$cluster, sep = ""))
-
-annottrackdf <- rbind(annottrack_genes,annottrack_TEs,annottrack_meth,
-                      annottrack_cluster, annottrack_allloci)
-
-annottrackdf$annot <- factor(annottrackdf$annot, levels=c("genes","TEs","meth",paste("LC", as.character(levels(gr$cluster)), sep = ""),"loci"))
-
-###plot cluster tracks - whole genome
-gg <- ggplot(annottrackdf) + geom_density(aes(x=start),adjust=1/20, fill="red") + facet_grid(annot~chrom, scales = "free") +  theme_bw()
-ggsave(gg,file=file.path(figLocation,"Clustercoverage.eps"),width=30,height=5)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage.png"),width=30,height=5)
-
-###plot cluster tracks
-annottrackdf_chr1 <- subset(annottrackdf, chrom == "chromosome_1")
-gg <- ggplot(annottrackdf_chr1) + geom_density(aes(x=start),adjust=1/20, fill="red") + facet_grid(annot~chrom, scales = "free") +  theme_bw(base_size = 8)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr1.eps"),width=10,height=5)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr1.png"),width=10,height=5)
-
-annottrackdf_chr2 <- subset(annottrackdf, chrom == "chromosome_2")
-gg <- ggplot(annottrackdf_chr2) + geom_density(aes(x=start),adjust=1/20, fill="red") + facet_grid(annot~chrom, scales = "free") +  theme_bw(base_size = 8)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr2.eps"),width=10,height=5)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr2.png"),width=10,height=5)
-
-annottrackdf_chr3 <- subset(annottrackdf, chrom == "chromosome_3")
-gg <- ggplot(annottrackdf_chr3) + geom_density(aes(x=start),adjust=1/20, fill="red") + facet_grid(annot~chrom, scales = "free") +  theme_bw(base_size = 8)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr3.eps"),width=10,height=5)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr3.png"),width=10,height=5)
-
-annottrackdf_chr4 <- subset(annottrackdf, chrom == "chromosome_4")
-gg <- ggplot(annottrackdf_chr4) + geom_density(aes(x=start),adjust=1/20, fill="red") + facet_grid(annot~chrom, scales = "free") +  theme_bw(base_size = 8)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr4.eps"),width=10,height=5)
-ggsave(gg,file=file.path(figLocation,"Clustercoverage_chr4.png"),width=10,height=5)
-
-#annottrackdf_chr10 <- subset(annottrackdf, chrom == "chromosome_10")
-#gg <- ggplot(annottrackdf_chr10) + geom_density(aes(x=start),adjust=1/20, fill="red") + facet_grid(annot~chrom, scales = "free") +  theme_bw(base_size = 8)
-#ggsave(gg,file="Clustercoverage_chr10.eps",width=10,height=5)
-#ggsave(gg,file="Clustercoverage_chr10.png",width=10,height=5)
-
-#annottrackdf_sfld18 <- subset(annottrackdf, chrom == "scaffold_18")
-#gg <- ggplot(annottrackdf_csfld18) + geom_density(aes(x=start),adjust=1/20, fill="red") + facet_grid(annot~chrom, scales = "free") +  theme_bw(base_size = 8)
-#ggsave(gg,file="Clustercoverage_sfld18.eps",width=10,height=5)
-#ggsave(gg,file="Clustercoverage_sfld18.png",width=10,height=5)
-
-
-#Output paragons (most representative loci for each cluster) for plotting in genome viewer
-lapply(1:nclust, function(ii) {
-  x <- resMCA$desc.ind$para[[ii]]
-  write.table(as.data.frame(gr[as.integer(names(x)),])[,1:4], sep = "\t", quote = FALSE, row.names = TRUE, col.names = NA, file = file.path(inputLocation,paste("paragons_LC", ii, ".txt", sep = "")))
-})

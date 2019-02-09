@@ -278,12 +278,12 @@ classCI <- function(x1, x2, probs, divisions, comma, plot = TRUE,plotname) {
 
 #####Scripts for generating summary tables#####
 #This function generates loci identified per chromosome and loci density table
-chromosomeLociTable <- function(mapName, mapLocation = "segmentation2018") {
+chromosomeLociTable <- function(locusMap, mapLocation = "segmentation2018") {
   #libraries requires
   require(segmentSeq)
   require(rtracklayer)
   #Load in loci
-  loci <- load(file.path(mapLocation,mapName))
+  loci <- locusMap
   #loci <- import.gff3("loci7_fdr01.gff3")
   #Specify Chlamy assembly v5 characteristics
   summaryTable <-
@@ -307,13 +307,13 @@ chromosomeLociTable <- function(mapName, mapLocation = "segmentation2018") {
 
 #This function generates a summary table of annotations up to the level of 5 different levels
 #TODO Maybe don't include this in submitted code, bit messy and hacky, and just for generating table anyway
-annotationSummaryTable <- function(mapFile , mapDir,specificAnnotations = FALSE,numLevels = 5) {
+annotationSummaryTable <- function(locusMap ,specificAnnotations = FALSE,numLevels = 5) {
   #Load required packages
   require(GenomicRanges)
   require(rtracklayer)
   require(dplyr)
   #Load in annotated file
-  load(file.path(mapDir, mapFile))
+  #load(file.path(mapDir, mapFile))
   #load("gr7_all_anno.Rdata")
   #Assign file
   locusMap <- gr
@@ -335,23 +335,24 @@ annotationSummaryTable <- function(mapFile , mapDir,specificAnnotations = FALSE,
                              v3=c("PercentageTrue",logicalSummary$PercentTrue),
                              stringsAsFactors = FALSE)
   #For those with three levels
-  for(i in 3:numLevels) {
+  for(ii in 3:numLevels) {
     #Extract l
-    xList <- lapply(justmcols[unlist(lapply(justmcols,function(x) nlevels(x) == i))],function(x) as.data.frame(table(x)))
+    xList <- lapply(justmcols[unlist(lapply(justmcols,function(x) nlevels(x) == ii))],function(x) as.data.frame(table(x)))
+    if(length(xList) == 0){break()  }
     xListDF <- data.frame(v0=rep("none",length(xList)*2),stringsAsFactors = FALSE)
-    for(ii in 1:i) {
+    for(jj in 1:ii) {
       temp <- data.frame(rep("none",length(xList)*2),stringsAsFactors = FALSE)
-      colnames(temp) <- paste0("v",ii)
+      colnames(temp) <- paste0("v",jj)
       xListDF <- cbind(xListDF,temp)
     }
     xNames <- names(xList)
   #Set up new dataframe
-    for(ii in 1:length(xList)) {
+    for(kk in 1:length(xList)) {
       #iterate over creating new dataframe each time
-      xListDF[2*ii-1,1] <- "AnnotationType"
-      xListDF[2*ii,1] <- xNames[ii]
-      xListDF[2*ii-1,2:(i+1)] <- as.character(t(xList[[ii]]['x']))
-      xListDF[2*ii,2:(i+1)] <- as.character(t(xList[[ii]]['Freq']))
+      xListDF[2*kk-1,1] <- "AnnotationType"
+      xListDF[2*kk,1] <- xNames[ii]
+      xListDF[2*kk-1,2:(ii+1)] <- as.character(t(xList[[kk]]['x']))
+      xListDF[2*kk,2:(ii+1)] <- as.character(t(xList[[kk]]['Freq']))
     }
     #Bind together
     summaryTable <- bind_rows(summaryTable,xListDF)
@@ -361,20 +362,20 @@ annotationSummaryTable <- function(mapFile , mapDir,specificAnnotations = FALSE,
 }
 
 #This function generates a summary table for each of the clusters for either all annotations or a given set of annotations
-clusterAnnotationTable <- function(clusteredMapFile, mapDir) {
+clusterAnnotationTable <- function(locusMap) {
   #Load in required functions
   require(GenomicRanges)
   require(rtracklayer)
   #Load in data
-  load(file.path(mapDir,clusteredMapFile))
+  #load(file.path(mapDir,clusteredMapFile))
   #load("gr7_clustered.Rdata")
-  locusMap <- gr
+  #locusMap <- gr
   #Extract mcols
   justmcols <- mcols(locusMap)
   #Extract clusters as seperate vector
   clusters <- levels(justmcols$cluster)
   #Start summary table
-  summaryTable <- data.frame(Annotation=colnames(tempLoci[,unlist(lapply(tempLoci,is.logical))]),
+  summaryTable <- data.frame(Annotation=colnames(justmcols[,unlist(lapply(justmcols,is.logical))]),
                              stringsAsFactors = FALSE)
   #Iterate through each of the clusters to produce summary table
   for(ii in 1:length(clusters)) {

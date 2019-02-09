@@ -112,42 +112,8 @@ plot(x = 2:length(klist), y = sapply(klist[-1], function(x) igraph::compare(x$cl
 dev.off()
 
 
-#####Plot cluster hierarchy#####
-z <- c(6,5,4,3,2)
 
-pdf(file.path(figLocation,"cluster_hierarchy.pdf"), height = 7, width = 7)
-par(mar = c(1,1,1,1))
-plot(NA, NA, ylim = c(0, length(z) * 2 - 1), xlim = c(0, length(clusterings[[5]])), axes = FALSE, xlab = "", ylab = "")
-par(mfrow = c(1, 1))
-lowTab <- NULL
-for(ii in 1:length(z)) {
 
-    clid <- z[ii] - 1  
-    
-    uppTab <- table(clusterings[[clid]])
-    uppCoord <- cbind(c(0, cumsum(uppTab)[-length(uppTab)]), cumsum(uppTab))
-
-    spacing <- c(0, rep(1 / clid * max(uppCoord) * 0.05, clid))
-    
-    rect(xleft = uppCoord[,1] + spacing, ybottom = ii * 2 - 2, xright = uppCoord[,2], ytop = ii * 2 - 1, col = rainbow(clid + 1), border = NA)
-#    if(z[ii] == 9)
-#        text(x = (uppCoord[,1] + spacing + uppCoord[,2]) / 2, y = ii * 2 - 1.5, paste0("LC", 1:9))
-
-    if(!is.null(lowTab)) {
-        normTab <- table(clusterings[[z[ii - 1] - 1]], clusterings[[clid]]) / as.vector(table(clusterings[[z[ii - 1] - 1]]))        
-        whCon <- which(normTab > 0.25, arr.ind = TRUE)
-        apply(cbind(whCon, normTab[whCon]), 1, function(x)
-            igraph:::igraph.Arrows(
-                x1 = mean(lowCoord[x[1],]),
-                y1 = ii * 2 - 3,
-                x2 = mean(uppCoord[x[2],]),
-                y2 = ii * 2 - 2, sh.lwd = 10 * x[3]^2, size = 0.2, curve = -0.00005, sh.col = rainbow(z[ii - 1])[x[1]])
-              )
-    }
-    
-    lowTab <- uppTab; lowCoord <- uppCoord    
-}
-dev.off()
 
 
 
