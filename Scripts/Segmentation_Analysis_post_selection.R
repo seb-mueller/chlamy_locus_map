@@ -191,58 +191,67 @@ dfNuc_chlamy <- df_chlamy %>%
   mutate(Plant = "C. reinhardtii")
 
 dfrep <- rbind(dfrep_chlamy, dfrep_ath) %>%
-  filter(Size < 30)
+  filter(Size < 30) %>%
+  mutate(Plant = as_factor(Plant))
 
 dfNuc <- rbind(dfNuc_chlamy, dfNuc_ath) %>%
-  filter(Size < 30)
+  filter(Size < 30) %>%
+  mutate(Plant = as_factor(Plant))
 
 # dfmelt <- mydf %>%
 #   group_by(Size) %>%
 #   summarise(Count = sum(value)/1e6)
 
-gg <- ggplot(dfrep, aes(x=factor(Size),
+ggsize <- ggplot(dfrep, aes(x=factor(Size),
                         fill=RepClass,
                         y=Count)) +
   geom_bar(stat="identity") +
   facet_grid(Plant ~ ., scale="free") +
   scale_fill_manual(values=rev(brewer.pal(7,"RdYlBu"))) +
-  xlab("sRNA size") +
-  ylab("sRNA read count [Millions]") +
+  # xlab("sRNA size") +
+  ylab("sRNA read count (Millions)]") +
   theme_bw() +
+  # theme(legend.direction="horizontal") +
+  theme(legend.justification = c(0, 0), 
+        legend.position = c(0, 0),
+        axis.title.x=element_blank()) +
   # ggtitle('Size distribution of redundant sRNAs reads') +
   guides(fill = guide_legend(title = "repeat class")) +
   scale_y_continuous(labels = scales::unit_format(unit = "", scale = 1e-6, digits = 2), 
                      breaks = scales::pretty_breaks(n = 8))
-ggsave(gg,file=file.path(inputLocation,"both_sRNA_redundant_distributionvsmultimatching.pdf"),width=5,height=4)
+# ggsave(gg,file=file.path(inputLocation,"both_sRNA_redundant_distributionvsmultimatching.pdf"),width=5,height=4)
 
-gg <- ggplot(dfrep, aes(x=factor(Size),
+ggrep <- ggplot(dfrep, aes(x=factor(Size),
                         fill=RepClass,
                         y=Proportion)) +
   geom_bar(stat="identity") +
   facet_grid(Plant ~ ., scale="free") +
   scale_fill_manual(values=rev(brewer.pal(7,"RdYlBu"))) +
-  xlab("sRNA size") +
-  ylab("Proportion") +
+  # xlab("sRNA size") +
+  ylab("Repetitiveness classes proportions") +
   theme_bw() +
   scale_y_continuous(labels = scales::percent) +
-  guides(fill = guide_legend(title = "repeat class"))
-ggsave(gg,file=file.path(inputLocation,"both_sRNA_redundant_distributionvsmultimatching_proportions.pdf"),width=5,height=4)
+  theme(legend.position="none",
+        axis.title.x=element_blank())
+# ggsave(gg,file=file.path(inputLocation,"both_sRNA_redundant_distributionvsmultimatching_proportions.pdf"),width=5,height=4)
 
-gg <- ggplot(dfNuc, aes(x=factor(Size),
+ggfirstNuc <- ggplot(dfNuc, aes(x=factor(Size),
                         fill=firstNuc,
                         y=Proportion)) +
   geom_bar(stat="identity") +
   facet_grid(Plant ~ ., scale="free") +
   scale_fill_manual(values=rev(brewer.pal(7,"RdYlBu"))) +
+  scale_fill_brewer(palette = "Paired") +
   xlab("sRNA size") +
-  ylab("Proportion") +
+  ylab("5' Nucleotide proportions") +
   theme_bw() +
   scale_y_continuous(labels = scales::percent) +
-  guides(fill = guide_legend(title = "repeat class"))
-ggsave(gg,file=file.path(inputLocation,"both_sRNA_redundant_size_Nuc_proportions.pdf"),width=5,height=4)
+  theme(legend.justification = c(0, 0), legend.position = c(0, 0)) +
+  guides(fill = guide_legend(title = "Nucleotide"))
+# ggsave(gg,file=file.path(inputLocation,"both_sRNA_redundant_size_Nuc_proportions.pdf"),width=5,height=4)
 
-ggsave(gg,file=file.path(inputLocation,"Clustercoverage.eps"),width=30,height=5)
-
+gg <- grid.arrange(ggsize, ggrep, ggfirstNuc)
+ggsave(gg,file=file.path(inputLocation, "sRNA_size_rep_firstNuc_chlamy_vs_arabidopsis.pdf"),width=6,height=7)
 
 table(firstNucnomulti)/length(firstNucnomulti)
 #    A    C    G    T 
