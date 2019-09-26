@@ -22,6 +22,12 @@ mycomment    <- paste0("LociRun2018_multi", mymultireads, "_gap", mygap) # goes 
 meta <- read_csv(file.path(gitdir, "Summary_of_Data.csv")) %>%
     filter(LociRun2018 == "Yes")
 
+# work out dataset to submit into ArrayExpress (internal + suitable for this study)
+meta_annotare <- meta %>%
+  filter(InternalExternal == "Internal")
+
+meta_annotare$DataCode
+
 # using instead of arbitray versions
 # e.g. "1f6085a"
 gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)

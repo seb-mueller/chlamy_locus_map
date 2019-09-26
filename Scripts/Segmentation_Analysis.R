@@ -16,10 +16,14 @@ gitdir      <- file.path(baseDir, "chlamy_locus_map_github")
 #segLocation <- "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentation_with_externals.r_2015-11-12_17/"
 annoDir <- "/projects/nick_matthews/resources"
 #annoDir = "C:/Users/Nick/Documents/Uni Work/Third Year/Project/segmentMap_II/Old_Annotation_Files"
-inputdata <- "segD_chlamy_segmentation_multi200_gap100.RData" #13739
+# inputdata <- "segD_chlamy_segmentation_multi200_gap100.RData" #13739
+inputdata <- "segD_chlamy_segmentation_LociRun2018_multi200_gap100.RData" #14390
+gitfingerprint <- system2("git", args = "rev-parse --short HEAD", stdout = TRUE)
+# gitfingerprint <- "90c7213"
 prefix <- str_replace(inputdata, "segD_chlamy_segmentation_(.*).RData", "\\1")
 # prefix  <-  "multi200_gap100"
-saveLocation <- file.path(segLocation, prefix)
+# saveLocation <- file.path(segLocation, prefix)
+saveLocation <- file.path(segLocation, paste(prefix, gitfingerprint, sep = "_"))
 
 # code for locus summary plots mostly to determine fdr cut-off
 # the locus map (not having selected loci yet, but after calculating loci likelihoods) is 'segD'
