@@ -24,19 +24,20 @@ prefix <- str_replace(inputdata, "segD_chlamy_segmentation_(.*).RData", "\\1")
 # prefix  <-  "multi200_gap100"
 # saveLocation <- file.path(segLocation, prefix)
 saveLocation <- file.path(segLocation, paste(prefix, gitfingerprint, sep = "_"))
+dir.create(saveLocation)
 
 # code for locus summary plots mostly to determine fdr cut-off
 # the locus map (not having selected loci yet, but after calculating loci likelihoods) is 'segD'
 load(file.path(segLocation, inputdata))
 # imports segD object, containing all loci plus count data, posteriours etc for each loci
+myfdr <- 0.05
 segD@coordinates
-# GRanges object with 13739 ranges and 0 metadata columns:
-#               seqnames         ranges strand
-#                  <Rle>      <IRanges>  <Rle>
-#       [1] chromosome_1 [    1,  3542]      *
-#   [13738]  scaffold_50 [11355, 11743]      *
-#   [13739]  scaffold_52 [    1,   663]      *
-#   -------
+# GRanges object with 14390 ranges and 0 metadata columns:
+#               seqnames      ranges strand
+#                  <Rle>   <IRanges>  <Rle>
+#       [1] chromosome_1      1-3542      *
+#       [2] chromosome_1  3543-13948      *
+#...
 #   seqinfo: 54 sequences from an unspecified genome; no seqlengths
 
 # check parameter used to generate gr
@@ -66,15 +67,15 @@ for(ii in (1:20 / 4)) {
   nfdrnum <- cbind(nfdrnum, c(fdr, nrow(loci)))
 }
 
-png("fdrNumbers.png")
+pdf(file.path(saveLocation, "fdrNumbers.pdf"))
 plot(nfdrnum[1,], nfdrnum[2,], log = "xy", xlab = "FDR", ylab = "# of loci", col = rep(c("red", "blue"), each =20))
+abline(v=0.05)
 dev.off()
 
 # check how many loci appear in N replicate groups (at various fdr levels)
-pdf("fdr_hists.pdf", width = 10, paper = "a4r")
+pdf(file.path(saveLocation, "fdr_hists.pdf"), width = 10, paper = "a4r")
 par(mfcol = c(3,5))
-for(ii in 1:5) {
-  fdr <- 10^-ii
+for(fdr in c(0.1, 0.05, 10^-(2:5))) {
   loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE)
   hist(rowSums(exp(loci@locLikelihoods[,wtReps])), breaks = 0:length(wtReps), main = paste("FDR =", fdr), xlab = "Expectation")
   hist(rowSums(exp(loci@locLikelihoods)), breaks = 0:nlevels(segD@replicates), main = paste("FDR =", fdr), xlab = "Expectation")
@@ -86,9 +87,8 @@ dev.off()
                                         # pick an FDR and move on
 
 #########nloci <- loci[,-1]; nloci@locLikelihoods <- loci@locLikelihoods[,-1]
+loci <- selectLoci(segD, FDR = myfdr, perReplicate = TRUE)
 
-fdr <- 0.05
-loci <- selectLoci(segD, FDR = fdr, perReplicate = TRUE)
 
 # get an idea of the sequencing depth added by each replicate groups
 sumLibsizes <- sapply(levels(loci@replicates), function(rep) sum(libsizes(loci)[loci@replicates == rep]))
@@ -110,11 +110,11 @@ collibs <- rep("black", nlevels(loci@replicates))
 collibs[wtReps] <- "red"
 
 # plot number of loci discovered as we add deeper libraries. Ideally, we want to see the number of additional loci tailing off, indicating we've achieved enough sequencing depth/variety to get most loci
-png("CumSeqVolume.png", height = 800, width = 600)
+pdf(file.path(saveLocation, "CumSeqVolume.pdf"))
 plot(x = cumsum(sumLibsizes[ordLoc]), y = cumloc, xlab = "Cumulative sequencing volume", ylab = "Total loci discovered", col = collibs[ordLoc], pch = 19)
 dev.off()
 
 # individual numbers of loci per replicate group. Should correlate roughly with library size for lower library sizes, hopefully become more or less constant for higher library sizes as returns diminish.
-png("LibScalingFactor.png", height = 800, width = 600)
+pdf(file.path(saveLocation, "LibScalingFactor.pdf"))
 plot(y = summariseLoci(loci, perReplicate = TRUE), x = meanLibscale, log = "x", ylab = "# of loci", xlab = "Library scaling factor")
 dev.off()
