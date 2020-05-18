@@ -1,6 +1,6 @@
 ##gff-version 3
 ##source-version rtracklayer 1.42.1
-##date 2018-12-13
+##date 2019-09-26
 chromosome_13	rtracklayer	sequence_feature	4823116	4823675	.	.	.	length=560;phasedRatio=0.846;phasedAbundance=354494;phasedNumber=29;phasedScore=313.572
 chromosome_11	rtracklayer	sequence_feature	1337276	1337667	.	.	.	length=392;phasedRatio=0.817;phasedAbundance=139189;phasedNumber=18;phasedScore=174.245
 chromosome_11	rtracklayer	sequence_feature	2205605	2205996	.	.	.	length=392;phasedRatio=0.817;phasedAbundance=139189;phasedNumber=18;phasedScore=174.245

@@ -19,6 +19,7 @@ library(readr)
 library(dplyr)
 library(purrr)
 library(ggplot2)
+library(GenomeInfoDbR)
 
 baseDir <- "/projects/nick_matthews"
 # baseDir <- "/home/sm934/workspace/chlamy"
@@ -73,32 +74,59 @@ table2(gr$sizeclass)
 #
 #      (0,100]     (100,400]    (400,1500] (1500,3e+03] (3e+03,Inf]
 #          272          2113          3109         552         118
+round(prop.table(table(gr$sizeclass))*100,1)
+#         (0,100]       (100,400]   (400,1.5e+03] (1.5e+03,3e+03]     (3e+03,Inf]
+#             4.4            34.3            50.4             9.0             1.9
 table2(gr$predominant_sRNA_sizeClass)
 #   equal_20bp   equal_21bp  larger_21bp smaller_20bp
 #          415         3302         1080         1367
 table2(gr$ratio_strand_class)
-# strong_bias    med_bias     no_bias        <NA> 
-#        2536        2182         829         617 
+# strong_bias    med_bias     no_bias        <NA>
+#        2536        2182         829         617
+prop.table(table(gr$ratio_strand_class))
+# strong_bias    med_bias     no_bias
+#   0.4571841   0.3933658   0.1494502
+prop.table(table(gr$ratio21vs20Class))
 table2(gr$repetitivenessClass)
-# 
-#  low  med high <NA> 
-#  518 1777 3477  392 
+#
+#  low  med high <NA>
+#  518 1777 3477  392
 table2(gr$phaseClass)
-#   none median   high 
-#   6020    123     21 
+#   none median   high
+#   6020    123     21
+prop.table(table(gr$phaseClass))
+#        none      median        high
+# 0.976638546 0.019954575 0.003406879
+prop.table(table(gr$predominant_sRNA_sizeClass))
+#   equal_20bp   equal_21bp  larger_21bp smaller_20bp
+#   0.06732641   0.53569111   0.17521090   0.22177158
 
 #------------------------------------ interessing associations
 
 table(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass)
 table2d(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass)
+round(prop.table(table(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass))*100,1)
 #                low  med high  Sum
-#                                  
+#
 # equal_20bp      12   98  298  408
 # equal_21bp     139  780 2368 3287
 # larger_21bp    261  441  340 1042
 # smaller_20bp   106  458  471 1035
 # Sum            518 1777 3477 5772
 # -> 20/21 are very Repetitive, but smalle/bigger not
+round(prop.table(table(gr$predominant_sRNA_sizeClass, gr$repetitivenessClass), 1)*100,1)
+#                 low  med high
+#   equal_20bp    2.9 24.0 73.0
+#   equal_21bp    4.2 23.7 72.0
+#   larger_21bp  25.0 42.3 32.6
+#   smaller_20bp 10.2 44.3 45.5
+round(prop.table(table(gr$predominant_sRNA_sizeClass, gr$ratio_strand_class), 1)*100,1)
+#                strong_bias med_bias no_bias
+#   equal_20bp          64.6     29.5     5.9
+#   equal_21bp          31.0     48.6    20.4
+#   larger_21bp         70.6     24.7     4.7
+#   smaller_20bp        62.3     26.7    11.0
+
 chisq.test(table(gr$predominant_sRNA_sizeClass, gr$predominant_5prime_letter))
 ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$sizeclass)))
 #               (0,100] (100,400] (400,1.5e+03] (1.5e+03,3e+03] (3e+03,Inf]  Sum
@@ -119,7 +147,7 @@ ftable(addmargins(table(gr$predominant_sRNA_sizeClass, gr$predominant_5prime_let
 
 # comparing loci definition with arabidopsis
 load(file.path(baseDir, "resources/arabidopsis/aD.RData"), envir = ath <- new.env())
-#redundant: 
+#redundant:
 load(file.path(baseDir, "resources/arabidopsis/gr9_clustered_update.rdata"), envir = ath )
 load(file.path(baseDir, "resources/arabidopsis/lociIV_fdr01.rdata"), envir = ath )
 load(file.path(baseDir, "resources/arabidopsis/workspace.rdata"), envir = ath )
@@ -132,7 +160,7 @@ aD2df <- function(aD) {
   # tmp <- table(width(aD@alignments))
   mydf <- data.frame(value=rowSums(aD@data),
                      firstNuc=substr(aD@alignments$tag,1,1),
-                     Size=width(aD@alignments), 
+                     Size=width(aD@alignments),
                      RepClass=ordered(cut(aD@alignments$multireads, breaks=c(0,1,2,5,10,20,50,Inf)))) %>%
   mutate(AbundanceClass = cut(value, breaks=c(0,5,500, 1e3,1e5, 1e6, Inf)))
   return(mydf)
@@ -209,7 +237,7 @@ round(prop.table(table(width(chlamy$aD_wt_dedup@alignments))[1:15]),3)*100
 
 dfrep_ath <- df_ath %>%
   group_by(Size, RepClass) %>%
-  summarise(non_redundant = sum(value > 0), 
+  summarise(non_redundant = sum(value > 0),
             redundant = sum(value)) %>%
   mutate(redundant_pct=redundant/sum(redundant)) %>%
   mutate(non_redundant_pct=non_redundant/sum(non_redundant)) %>%
@@ -218,7 +246,7 @@ dfrep_ath <- df_ath %>%
 dfNuc_ath <- df_ath %>%
   filter(!is.na(AbundanceClass)) %>%
   group_by(Size, firstNuc) %>%
-  summarise(non_redundant = sum(value > 0), 
+  summarise(non_redundant = sum(value > 0),
             redundant = sum(value)) %>%
   mutate(redundant_pct=redundant/sum(redundant)) %>%
   mutate(non_redundant_pct=non_redundant/sum(non_redundant)) %>%
@@ -227,7 +255,7 @@ dfNuc_ath <- df_ath %>%
 dfAbund_ath <- df_ath %>%
   filter(!is.na(AbundanceClass)) %>%
   group_by(Size, AbundanceClass) %>%
-  summarise(non_redundant = sum(value > 0), 
+  summarise(non_redundant = sum(value > 0),
             redundant = sum(value)) %>%
   mutate(redundant_pct=redundant/sum(redundant)) %>%
   mutate(non_redundant_pct=non_redundant/sum(non_redundant)) %>%
@@ -248,7 +276,7 @@ dfNuc_chlamy <- df_chlamy %>%
 dfAbund_chlamy <- df_chlamy %>%
   filter(!is.na(AbundanceClass)) %>%
   group_by(Size, AbundanceClass) %>%
-  summarise(non_redundant = sum(value > 0), 
+  summarise(non_redundant = sum(value > 0),
             redundant = sum(value)) %>%
   mutate(redundant_pct=redundant/sum(redundant)) %>%
   mutate(non_redundant_pct=non_redundant/sum(non_redundant)) %>%
@@ -280,12 +308,12 @@ ggsize <- ggplot(dfAbund, aes(x=factor(Size),
   ylab("sRNA read count") +
   theme_bw() +
   # theme(legend.direction="horizontal") +
-  theme(legend.justification = c(0, 0), 
+  theme(legend.justification = c(0, 0),
         legend.position = c(0, 0),
         axis.title.x=element_blank()) +
   # ggtitle('Size distribution of redundant sRNAs reads') +
   guides(fill = guide_legend(title = "repeat class")) +
-  scale_y_continuous(labels = scales::unit_format(unit = "M", scale = 1e-6, digits = 2), 
+  scale_y_continuous(labels = scales::unit_format(unit = "M", scale = 1e-6, digits = 2),
                      breaks = scales::pretty_breaks(n = 6))
  # ggsave(ggsize,file=file.path(inputLocation,"both_sRNA_redundant_distributionvsmultimatching.pdf"),width=5,height=4)
 
@@ -314,7 +342,7 @@ ggrep <- ggplot(dfrep, aes(x=factor(Size),
   scale_fill_manual(values=rev(brewer.pal(7,"RdYlBu"))) +
   # xlab("sRNA size") +
   ylab("Repetitiveness classes proportions") +
-  theme(legend.justification = c(0, 0), 
+  theme(legend.justification = c(0, 0),
         legend.position = c(0, 0),
         axis.title.x=element_blank()) +
   theme_bw() +
@@ -341,17 +369,17 @@ gg <- grid.arrange(ggsize, ggAbund, ggrep, ggfirstNuc)
 ggsave(gg,file=file.path(inputLocation, "sRNA_size_rep_firstNuc_chlamy_vs_arabidopsis.pdf"),width=7,height=7)
 
 table(firstNucnomulti)/length(firstNucnomulti)
-#    A    C    G    T 
+#    A    C    G    T
 # 0.38 0.14 0.19 0.28
  round(tapply(rowSums(aDnormalnomulti@data),firstNucnomulti,sum)/sum(aDnormalnomulti@data),2)
-#    A    C    G    T 
+#    A    C    G    T
 # 0.37 0.13 0.23 0.28
 
 # do percentage!
 df_chlamy %>%
   filter(Size < 30) %>%
   group_by(Size) %>%
-  summarise(Count_nonred = sum(value==1), 
+  summarise(Count_nonred = sum(value==1),
             Count = sum(value)) %>%
   mutate(Count_pct = 100 * Count / sum(Count)) %>%
   mutate(Count_nonred_pct = 100 * Count_nonred / sum(Count_nonred))
@@ -368,7 +396,7 @@ df_chlamy %>%
 df_ath %>%
   filter(Size < 30) %>%
   group_by(RepClass) %>%
-  summarise(Count_nonred = sum(value==1), 
+  summarise(Count_nonred = sum(value==1),
             Count = sum(value)) %>%
   mutate(Count_pct = 100 * Count / sum(Count)) %>%
   mutate(Count_nonred_pct = 100 * Count_nonred / sum(Count_nonred))
@@ -385,7 +413,7 @@ df_ath %>%
 df_ath %>%
   filter(Size < 30) %>%
   group_by(firstNuc) %>%
-  summarise(Count_nonred = sum(value==1), 
+  summarise(Count_nonred = sum(value==1),
             Count = sum(value)) %>%
   mutate(Count_pct = 100 * Count / sum(Count)) %>%
   mutate(Count_nonred_pct = 100 * Count_nonred / sum(Count_nonred))
@@ -400,7 +428,7 @@ df_ath %>%
 df_chlamy %>%
   filter(Size < 30) %>%
   group_by(AbundanceClass) %>%
-  summarise(Count_nonred = sum(value==1), 
+  summarise(Count_nonred = sum(value==1),
             Count = sum(value)) %>%
   mutate(Count_pct = 100 * Count / sum(Count)) %>%
   mutate(Count_nonred_pct = 100 * Count_nonred / sum(Count_nonred))

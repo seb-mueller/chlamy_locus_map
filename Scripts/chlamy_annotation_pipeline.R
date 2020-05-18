@@ -118,6 +118,10 @@ ls(annotenv)
 
 # annotate by size class
 gr <- sizeClass(gr, intervals = c(0,100,400,1500,3000,Inf))
+pdf(file.path(saveLocation, paste0("sizeLoci_density", prefix, ".pdf")))
+plot(density(log(gr$size[gr$size>0])))
+abline(v = log(c(0,100,400,1500,3000,Inf)))
+dev.off()
 
 # annotate with overlapping features
 gr <- expressionClass(locAnn = gr, loci = loci, wt = metawt)
@@ -152,6 +156,11 @@ gr <- countingBiases(locAnn = gr, cl = cl,
                      aDfile = aDfile)
 stopCluster(cl)
 # load(file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
+pdf(file.path(saveLocation, paste0("21v20ratio_density", prefix, ".pdf")))
+plot(density(log(gr$ratio21vs20[gr$ratio21vs20>0]), na.rm = T))
+abline(v = log(c(0.3, 0.7)))
+dev.off()
+
 
 # what is the dominating size class?
 
@@ -177,15 +186,34 @@ levels(gr$ratio_strand_class) <- c("strong_bias", "med_bias", "no_bias", "med_bi
 gr$repetitivenessClass <- classCI(gr$countsallwt, gr$countsnormalwtnorm,
                                   probs = c(med = 0.6, high = 0.9), comma = 1,
                                   plotname=file.path(saveLocation, paste0("Repetitiveness_", prefix, ".pdf")))
+table(gr$repetitivenessClass)
+#  low  med high 
+#  518 1777 3477 
+prop.table(table(gr$repetitivenessClass))
+#        low        med       high 
+# 0.08974359 0.30786556 0.60239085 
+mean((gr$repetitiveness), na.rm=T)
+# [1] 0.7902172
 
 
 gr$phaseClass <- as.ordered(cut(gr$phaseScore, c(-1, 0, 60, Inf),include.lowest=TRUE,
                                 labels= c("none","median","high")))
+table(gr$phaseClass)
+#   none median   high 
+#   6020    123     21 
+prop.table(table(gr$phaseClass))
+#        none      median        high 
+# 0.976638546 0.019954575 0.003406879 
+mean((gr$phase), na.rm=T)
+# [1] NA
 
 save(gr, meta, metawt, loci, baseDir, prefix, saveLocation, file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
+load(file = file.path(saveLocation, paste0("gr_fdr", fdr,  ".RData")))
 # export as gff3 file for viewing in browser
 export.gff3(gr, con = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".gff")))
 #Write csv for phasing
 
 write.csv(as.data.frame(gr), file = file.path(saveLocation, paste0("loci_fdr", fdr, prefix, ".csv")))
 #Save file
+
+tmp3 <- as.data.frame(elementMetadata(gr4[,c("hasH3K27me1","hasH3K27me3","hasH3K9me2","hasH3K9Ac","hasH3K4me2","hasH3K4me3","hasH3K36me2","sizeclass","hasH3","meth_CGwtlociClass","meth_CHHwtlociClass","meth_CHGwtlociClass","polV","ratio_strand_class","hasExpression","RdDM","Ago1IPclass","Ago2IPbclass","Ago4IPaclass","Ago6IPclass","Ago5IPclass","Ago9IPclass","ratio21vs24Class","tissue_expressionClass","repetetivnessClass","isIR","isPhased")]))

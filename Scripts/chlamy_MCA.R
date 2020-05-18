@@ -78,6 +78,9 @@ mc6 <- MCA(cF6, graph = FALSE,ncp = ndim ,quali.sup=which(colnames(cF6) %in% sup
 resMCA <- HCPC(mc6, graph = FALSE, proba = 1, consol = FALSE, order = FALSE, nb.clust = nclust, kk = nclust, method = "centroid")
 gr$cluster <- as.factor(resMCA$data.clust$clust)
 
+# write out loci as csv including cluster!! Major result!!
+write.csv(as.data.frame(gr), file = file.path(saveLocation, paste0("loci_fdr_cluster_", fdr, prefix, ".csv")))
+
 # now check feature associations
 
 
